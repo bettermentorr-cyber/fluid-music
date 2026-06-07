@@ -635,6 +635,7 @@ fun HomeScreen(
     val bottomSheetPageState = LocalBottomSheetPageState.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val context = androidx.compose.ui.platform.LocalContext.current
     val haptic = LocalHapticFeedback.current
     val isListenTogetherGuest = false
 
@@ -2595,7 +2596,7 @@ fun HomeScreen(
                     }
                 },
                 onRecognitionClick = {
-                    navController.navigate("recognition")
+                    android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
                 },
             )
         }

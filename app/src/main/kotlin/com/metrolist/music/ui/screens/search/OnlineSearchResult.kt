@@ -130,6 +130,7 @@ fun OnlineSearchResult(
     val isPlaying by playerConnection.isEffectivelyPlaying.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
@@ -576,7 +577,9 @@ fun OnlineSearchResult(
             HideOnScrollFAB(
                 lazyListState = lazyListState,
                 icon = R.drawable.mic,
-                onClick = { navController.navigate("recognition") },
+                onClick = { 
+                    android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
+                },
             )
         }
     }

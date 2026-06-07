@@ -86,6 +86,7 @@ fun SearchScreen(
     val playerConnection = LocalPlayerConnection.current
     val isPlayerExpanded = LocalIsPlayerExpanded.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val lazyListState = rememberLazyListState()
     var isHandlingScrollToTop by remember { mutableStateOf(false) }
 
@@ -317,7 +318,9 @@ fun SearchScreen(
             HideOnScrollFAB(
                 lazyListState = lazyListState,
                 icon = R.drawable.mic,
-                onClick = { navController.navigate("recognition") },
+                onClick = { 
+                    android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
+                },
             )
         }
     }

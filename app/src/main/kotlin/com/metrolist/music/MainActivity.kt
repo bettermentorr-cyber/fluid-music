@@ -323,10 +323,11 @@ class MainActivity : ComponentActivity() {
                 } else {
                     startService(serviceIntent)
                 }
-            } catch (e: ForegroundServiceStartNotAllowedException) {
-                Timber.w(e, "Cannot start foreground service from background")
             } catch (e: IllegalStateException) {
                 Timber.w(e, "Failed to start foreground service")
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "Caught background service error", e)
+                Timber.w(e, "Cannot start foreground service from background")
             }
         }
 
@@ -680,6 +681,7 @@ class MainActivity : ComponentActivity() {
                 val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
                 val navController = rememberNavController()
+                val context = androidx.compose.ui.platform.LocalContext.current
 
                 LaunchedEffect(Unit) {
                     val lastSeenVersion = dataStore.data.first()[LastSeenVersionKey] ?: ""
@@ -1125,11 +1127,9 @@ class MainActivity : ComponentActivity() {
                                 }
 
                             val onSearchLongClick: () -> Unit =
-                                remember(navController) {
+                                remember(context) {
                                     {
-                                        navController.navigate("recognition") {
-                                            launchSingleTop = true
-                                        }
+                                        android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 }
 
@@ -1250,11 +1250,9 @@ class MainActivity : ComponentActivity() {
                                 }
 
                             val onRailSearchLongClick: () -> Unit =
-                                remember(navController) {
+                                remember(context) {
                                     {
-                                        navController.navigate("recognition") {
-                                            launchSingleTop = true
-                                        }
+                                        android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 }
 
