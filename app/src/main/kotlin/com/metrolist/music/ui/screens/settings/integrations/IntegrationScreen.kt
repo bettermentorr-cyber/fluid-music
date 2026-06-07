@@ -41,25 +41,7 @@ fun IntegrationScreen(
     ) {
         IntegrationCard(
             title = stringResource(R.string.general),
-            items = listOf(
-                IntegrationCardItem(
-                    icon = painterResource(R.drawable.discord),
-                    title = { Text(stringResource(R.string.discord_integration)) },
-                    description = if (!BuildConfig.DISCORD_RPC_AVAILABLE) {
-                        { Text(stringResource(R.string.discord_gms_only)) }
-                    } else null,
-                    onClick = if (BuildConfig.DISCORD_RPC_AVAILABLE) {
-                        { navController.navigate("settings/integrations/discord") }
-                    } else null
-                ),
-                IntegrationCardItem(
-                    icon = painterResource(R.drawable.music_note),
-                    title = { Text(stringResource(R.string.lastfm_integration)) },
-                    onClick = {
-                        navController.navigate("settings/integrations/lastfm")
-                    }
-                )
-            )
+            items = emptyList()
         )
     }
 

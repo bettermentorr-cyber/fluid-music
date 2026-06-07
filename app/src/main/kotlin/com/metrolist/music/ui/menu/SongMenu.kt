@@ -70,7 +70,7 @@ import com.metrolist.music.LocalNavController
 import com.metrolist.innertube.YouTube
 import com.metrolist.music.LocalDatabase
 import com.metrolist.music.LocalDownloadUtil
-import com.metrolist.music.LocalListenTogetherManager
+
 import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.LocalSyncUtils
 import com.metrolist.music.R
@@ -124,7 +124,7 @@ fun SongMenu(
         .collectAsStateWithLifecycle(initialValue = null)
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
-    val listenTogetherManager = LocalListenTogetherManager.current
+
     val scope = rememberCoroutineScope()
     var refetchIconDegree by remember { mutableFloatStateOf(0f) }
 
@@ -499,7 +499,7 @@ fun SongMenu(
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-    val isGuest = listenTogetherManager?.isInRoom == true && !listenTogetherManager.isHost
+    val isGuest = false
 
     LazyColumn(
         contentPadding =
@@ -568,7 +568,7 @@ fun SongMenu(
             Material3MenuGroup(
                 items =
                     listOfNotNull(
-                        if (listenTogetherManager != null && listenTogetherManager.isInRoom && !listenTogetherManager.isHost) {
+                        if (false) {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.suggest_to_host)) },
                                 icon = {
@@ -578,17 +578,6 @@ fun SongMenu(
                                     )
                                 },
                                 onClick = {
-                                    val durationMs = if (song.song.duration > 0) song.song.duration.toLong() * 1000 else 180000L
-                                    val trackInfo =
-                                        com.metrolist.music.listentogether.TrackInfo(
-                                            id = song.id,
-                                            title = song.song.title,
-                                            artist = orderedArtists.joinToString(", ") { it.name },
-                                            album = song.song.albumName,
-                                            duration = durationMs,
-                                            thumbnail = song.thumbnailUrl,
-                                        )
-                                    listenTogetherManager.suggestTrack(trackInfo)
                                     onDismiss()
                                 },
                             )

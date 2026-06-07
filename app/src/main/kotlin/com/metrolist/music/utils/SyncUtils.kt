@@ -16,9 +16,7 @@ import com.metrolist.innertube.models.PodcastItem
 import com.metrolist.innertube.models.SongItem
 import com.metrolist.innertube.utils.completed
 import com.metrolist.innertube.utils.parseCookieString
-import com.metrolist.lastfm.LastFM
 import com.metrolist.music.constants.InnerTubeCookieKey
-import com.metrolist.music.constants.LastFMUseSendLikes
 import com.metrolist.music.constants.LastFullSyncKey
 import com.metrolist.music.constants.SYNC_COOLDOWN
 import com.metrolist.music.db.MusicDatabase
@@ -120,7 +118,6 @@ class SyncUtils @Inject constructor(
     private val _syncState = MutableStateFlow(SyncState())
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
-    private var lastfmSendLikes = false
     private val playlistsBeingModified = ConcurrentHashMap<String, AtomicInteger>()
     // Tracks songs currently being added to YouTube — browseId → set of songIds
     private val pendingYouTubeAdds = ConcurrentHashMap<String, MutableSet<String>>()
@@ -145,13 +142,6 @@ class SyncUtils @Inject constructor(
         (playlistsBeingModified[playlistId]?.get() ?: 0) > 0 ||
                 pendingRemovals.any { (_, set) -> set.any { it.third == playlistId } }
     init {
-        context.dataStore.data
-            .map { it[LastFMUseSendLikes] ?: false }
-            .distinctUntilChanged()
-            .collectLatest(syncScope) {
-                lastfmSendLikes = it
-            }
-
         startProcessingQueue()
     }
 
@@ -577,19 +567,6 @@ class SyncUtils @Inject constructor(
             YouTube.likeVideo(s.id, s.liked)
         }.onFailure { e ->
             Timber.e(e, "Failed to like song on YouTube: ${s.id}")
-        }
-
-        if (lastfmSendLikes) {
-            try {
-                val dbSong = database.song(s.id).firstOrNull()
-                LastFM.setLoveStatus(
-                    artist = dbSong?.artists?.joinToString { a -> a.name } ?: "",
-                    track = s.title,
-                    love = s.liked
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to update LastFM love status")
-            }
         }
     }
 

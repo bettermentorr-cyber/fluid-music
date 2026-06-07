@@ -70,8 +70,7 @@ fun YouTubeSelectionSongMenu(
         mutableStateOf(false)
     }
 
-    val listenTogetherManager = com.metrolist.music.LocalListenTogetherManager.current
-    val isGuest = listenTogetherManager?.isInRoom == true && listenTogetherManager.isHost == false
+    val isGuest = false
 
     var downloadState by remember {
         mutableIntStateOf(Download.STATE_STOPPED)

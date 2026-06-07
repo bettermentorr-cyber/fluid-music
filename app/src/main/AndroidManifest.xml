@@ -338,44 +338,7 @@
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
             android:value="com.metrolist.music.cast.CastOptionsProvider" />
 
-        <!-- Music Recognizer Widget -->
-        <receiver
-            android:name=".widget.MusicRecognizerWidgetReceiver"
-            android:exported="true"
-            android:label="@string/widget_recognizer_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.metrolist.music.widget.recognizer.TAP_MIC" />
-                <action android:name="com.metrolist.music.widget.recognizer.UPDATE" />
-                <action android:name="com.metrolist.music.widget.recognizer.RESET" />
-            </intent-filter>
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/recognizer_widget_info" />
-        </receiver>
-
-        <service
-            android:name=".widget.MusicRecognizerWidgetService"
-            android:exported="false"
-            android:foregroundServiceType="microphone" />
-
-        <service
-            android:name=".recognition.RecognitionForegroundService"
-            android:exported="false"
-            android:foregroundServiceType="microphone" />
-
-        <!-- Music Recognizer Quick Settings Tile -->
-        <service
-            android:name=".quicksettings.MusicRecognizerTileService"
-            android:label="@string/qs_tile_music_recognizer"
-            android:icon="@drawable/mic"
-            android:exported="true"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
 
     </application>
 
