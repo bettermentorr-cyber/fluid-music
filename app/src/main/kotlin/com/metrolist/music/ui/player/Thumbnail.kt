@@ -5,6 +5,16 @@
 
 package com.metrolist.music.ui.player
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
+import com.metrolist.music.playback.VideoState
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -607,26 +617,34 @@ private fun ThumbnailImage(
     cropArtwork: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val videoUrl by VideoState.currentVideoStreamUrl.collectAsState()
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .graphicsLayer {
-                // Use offscreen compositing for hardware acceleration during animations
                 compositingStrategy = CompositingStrategy.Offscreen
             }
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(artworkUri)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .diskCachePolicy(CachePolicy.ENABLED)
-                .networkCachePolicy(CachePolicy.ENABLED)
-                .build(),
-            contentDescription = null,
-            contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
-            modifier = Modifier.fillMaxSize()
-        )
+        if (videoUrl != null) {
+            VideoPlayerSurface(
+                videoUrl = videoUrl!!,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(artworkUri)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = null,
+                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
@@ -647,5 +665,44 @@ private fun SeekEffectOverlay(
         modifier = modifier
             .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
             .padding(8.dp)
+    )
+}
+
+@Composable
+private fun VideoPlayerSurface(
+    videoUrl: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    
+    // Instantiate an isolated UI-only ExoPlayer
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            playWhenReady = true
+            // Mute the video player so it doesn't double-play with MusicService
+            volume = 0f 
+        }
+    }
+
+    // Manage the ExoPlayer lifecycle to prevent memory leaks
+    DisposableEffect(videoUrl) {
+        val mediaItem = androidx.media3.common.MediaItem.fromUri(videoUrl)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    // Bind ExoPlayer to the UI
+    AndroidView(
+        factory = {
+            PlayerView(context).apply {
+                player = exoPlayer
+                useController = false // Hide default ExoPlayer controls
+            }
+        },
+        modifier = modifier.fillMaxSize()
     )
 }

@@ -69,6 +69,8 @@ object YTPlayerUtils {
         val format: PlayerResponse.StreamingData.Format,
         val streamUrl: String,
         val streamExpiresInSeconds: Int,
+        val videoFormat: PlayerResponse.StreamingData.Format? = null,
+        val videoStreamUrl: String? = null,
     )
     /**
      * Custom player response intended to use for playback.
@@ -153,6 +155,8 @@ object YTPlayerUtils {
         val playbackTracking = mainPlayerResponse.playbackTracking
         var format: PlayerResponse.StreamingData.Format? = null
         var streamUrl: String? = null
+        var videoFormat: PlayerResponse.StreamingData.Format? = null
+        var videoStreamUrl: String? = null
         var streamExpiresInSeconds: Int? = null
         var streamPlayerResponse: PlayerResponse? = null
         val retryMainPlayerResponse: PlayerResponse? = if (usedAgeRestrictedClient != null) mainPlayerResponse else null
@@ -185,6 +189,8 @@ object YTPlayerUtils {
             // reset for each client
             format = null
             streamUrl = null
+            videoFormat = null
+            videoStreamUrl = null
             streamExpiresInSeconds = null
 
             // decide which client to use for streams and load its player response
@@ -245,6 +251,11 @@ object YTPlayerUtils {
                         connectivityManager,
                     )
 
+                videoFormat = findVideoFormat(
+                    responseToUse,
+                    connectivityManager,
+                )
+
                 if (format == null) {
                     Timber.tag(logTag).d("No suitable format found for client: ${if (clientIndex == -1) MAIN_CLIENT.clientName else STREAM_FALLBACK_CLIENTS[clientIndex].clientName}")
                     continue
@@ -256,6 +267,10 @@ object YTPlayerUtils {
                 if (streamUrl == null) {
                     Timber.tag(logTag).d("Stream URL not found for format")
                     continue
+                }
+
+                if (videoFormat != null) {
+                    videoStreamUrl = findUrlOrNull(videoFormat, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
                 }
 
                 // Apply n-transform for throttle parameter handling
@@ -314,6 +329,19 @@ object YTPlayerUtils {
                         Timber.tag(TAG).e(e, "N-transform or pot append failed: ${e.message}")
                         Timber.tag(TAG).e("Stack trace: ${e.stackTraceToString().take(500)}")
                         // Continue with original URL
+                    }
+
+                    if (videoStreamUrl != null) {
+                        try {
+                            videoStreamUrl = CipherDeobfuscator.transformNParamInUrl(videoStreamUrl!!)
+                            val needsPoToken = currentClient.useWebPoTokens && poToken?.streamingDataPoToken != null
+                            if (needsPoToken) {
+                                val separator = if ("?" in videoStreamUrl!!) "&" else "?"
+                                videoStreamUrl = "${videoStreamUrl}${separator}pot=${Uri.encode(poToken.streamingDataPoToken)}"
+                            }
+                        } catch (e: Exception) {
+                            Timber.tag(TAG).e(e, "Video n-transform or pot append failed: ${e.message}")
+                        }
                     }
                 } else {
                     Timber.tag(TAG).d("Skipping n-transform (not required for this client/content)")
@@ -438,6 +466,8 @@ object YTPlayerUtils {
             format,
             streamUrl,
             streamExpiresInSeconds,
+            videoFormat,
+            videoStreamUrl,
         )
     }.onFailure { e ->
         println("[PLAYBACK_DEBUG] EXCEPTION during playback for videoId=$videoId: ${e::class.simpleName}: ${e.message}")
@@ -548,6 +578,33 @@ object YTPlayerUtils {
 
         return format
     }
+
+    private fun findVideoFormat(
+        playerResponse: PlayerResponse,
+        connectivityManager: ConnectivityManager
+    ): PlayerResponse.StreamingData.Format? {
+        Timber.tag(logTag).d("Finding video format, network metered: ${connectivityManager.isActiveNetworkMetered}")
+
+        val adaptiveFormats = playerResponse.streamingData?.adaptiveFormats ?: return null
+        val videoCapableFormats = adaptiveFormats.filter { !it.isAudio }
+        if (videoCapableFormats.isEmpty()) return null
+
+        val maxResolution = if (connectivityManager.isActiveNetworkMetered) 720 else 1080
+        val targetFormats = videoCapableFormats.filter { (it.height ?: 0) <= maxResolution }
+        val safeFormats = targetFormats.ifEmpty { videoCapableFormats }
+
+        fun scoreVideoCodec(mimeType: String): Int = when {
+            mimeType.contains("avc1", ignoreCase = true) -> 2 
+            mimeType.contains("vp9", ignoreCase = true) -> 1  
+            else -> 0
+        }
+
+        return safeFormats.maxWithOrNull(
+            compareBy<PlayerResponse.StreamingData.Format> { scoreVideoCodec(it.mimeType) }
+                .thenBy { it.height ?: 0 }
+        )
+    }
+
     /**
      * Checks if the stream url returns a successful status.
      * If this returns true the url is likely to work.
