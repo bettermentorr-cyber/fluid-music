@@ -115,6 +115,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -1855,14 +1856,20 @@ fun BottomSheetPlayer(
                             ).padding(bottom = 24.dp)
                             .fillMaxSize(),
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .nestedScroll(state.preUpPostDownNestedScrollConnection),
                     ) {
                         val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
                         Row(
                             modifier = Modifier
+                                .align(Alignment.TopCenter)
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 8.dp),
+                                .padding(top = 16.dp, bottom = 8.dp)
+                                .zIndex(1f),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             androidx.compose.material3.FilterChip(
@@ -1877,14 +1884,8 @@ fun BottomSheetPlayer(
                                 label = { Text("Video") }
                             )
                         }
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier =
-                                Modifier
-                                    .weight(1f)
-                                    .nestedScroll(state.preUpPostDownNestedScrollConnection),
-                        ) {
-                            // Remember lambdas to prevent unnecessary recomposition
+
+                        // Remember lambdas to prevent unnecessary recomposition
                         val currentSliderPosition by rememberUpdatedState(sliderPosition)
                         val sliderPositionProvider = remember { { currentSliderPosition } }
                         val isExpandedProvider = remember(state) { { state.isExpanded } }
@@ -1912,7 +1913,6 @@ fun BottomSheetPlayer(
                             }
                         }
                     }
-                }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -1946,30 +1946,32 @@ fun BottomSheetPlayer(
                             .padding(bottom = bottomPadding)
                             .animateContentSize(),
                 ) {
-                    val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 8.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        androidx.compose.material3.FilterChip(
-                            selected = !isVideoModeActive,
-                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                            label = { Text("Song") }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        androidx.compose.material3.FilterChip(
-                            selected = isVideoModeActive,
-                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                            label = { Text("Video") }
-                        )
-                    }
-
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.weight(1f),
                     ) {
+                        val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 8.dp)
+                                .zIndex(1f),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            androidx.compose.material3.FilterChip(
+                                selected = !isVideoModeActive,
+                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                label = { Text("Song") }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            androidx.compose.material3.FilterChip(
+                                selected = isVideoModeActive,
+                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                label = { Text("Video") }
+                            )
+                        }
+
                         // Remember lambdas to prevent unnecessary recomposition
                         val currentSliderPosition by rememberUpdatedState(sliderPosition)
                         val sliderPositionProvider = remember { { currentSliderPosition } }

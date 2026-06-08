@@ -248,7 +248,7 @@ fun Thumbnail(
         playerConnection.player.currentMediaItemIndex,
         playerConnection.player.shuffleModeEnabled,
         swipeThumbnail,
-        mediaMetadata?.id
+        mediaMetadata
     ) {
         derivedStateOf {
             getMediaItems(playerConnection.player, swipeThumbnail)
@@ -285,7 +285,7 @@ fun Thumbnail(
     }
 
     // Update position when song changes
-    LaunchedEffect(mediaMetadata?.id, canSkipPrevious, canSkipNext) {
+    LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
         val index = maxOf(0, currentMediaIndex)
         if (index >= 0 && index < mediaItems.size) {
             try {
