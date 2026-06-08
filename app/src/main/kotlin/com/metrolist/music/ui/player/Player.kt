@@ -52,6 +52,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -320,6 +321,7 @@ fun BottomSheetPlayer(
 
     val playbackState by playerConnection.playbackState.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
+    val queueTitle by playerConnection.queueTitle.collectAsStateWithLifecycle()
     val currentSong by playerConnection.currentSong.collectAsStateWithLifecycle(initialValue = null)
     LaunchedEffect(currentSong) {
         android.util.Log.d("PlayerDebug", "Player Engine emitted new song: ${currentSong?.song?.title ?: currentSong?.song?.id}")
@@ -1864,25 +1866,44 @@ fun BottomSheetPlayer(
                                 .nestedScroll(state.preUpPostDownNestedScrollConnection),
                     ) {
                         val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
-                        Row(
+
+                        // Wrap the header text and chips in a tight top-aligned Column 
+                        // to cleanly isolate them from the poster container below
+                        Column(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 8.dp)
+                                .statusBarsPadding()
+                                .padding(top = 8.dp)
                                 .zIndex(1f),
-                            horizontalArrangement = Arrangement.Center
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            androidx.compose.material3.FilterChip(
-                                selected = !isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                                label = { Text("Song") }
+                            // 1. Let the system draw the text first
+                            ThumbnailHeader(
+                                queueTitle = queueTitle,
+                                albumTitle = mediaMetadata?.album?.title,
+                                textColor = TextBackgroundColor
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            androidx.compose.material3.FilterChip(
-                                selected = isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                                label = { Text("Video") }
-                            )
+                            
+                            // 2. Chips align automatically underneath the flattened line
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp, bottom = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                androidx.compose.material3.FilterChip(
+                                    selected = !isVideoModeActive,
+                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                    label = { Text("Song") }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                androidx.compose.material3.FilterChip(
+                                    selected = isVideoModeActive,
+                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                    label = { Text("Video") }
+                                )
+                            }
                         }
 
                         // Remember lambdas to prevent unnecessary recomposition
@@ -1951,25 +1972,44 @@ fun BottomSheetPlayer(
                         modifier = Modifier.weight(1f),
                     ) {
                         val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
-                        Row(
+
+                        // Wrap the header text and chips in a tight top-aligned Column 
+                        // to cleanly isolate them from the poster container below
+                        Column(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 8.dp)
+                                .statusBarsPadding()
+                                .padding(top = 8.dp)
                                 .zIndex(1f),
-                            horizontalArrangement = Arrangement.Center
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            androidx.compose.material3.FilterChip(
-                                selected = !isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                                label = { Text("Song") }
+                            // 1. Let the system draw the text first
+                            ThumbnailHeader(
+                                queueTitle = queueTitle,
+                                albumTitle = mediaMetadata?.album?.title,
+                                textColor = TextBackgroundColor
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            androidx.compose.material3.FilterChip(
-                                selected = isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                                label = { Text("Video") }
-                            )
+                            
+                            // 2. Chips align automatically underneath the flattened line
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp, bottom = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                androidx.compose.material3.FilterChip(
+                                    selected = !isVideoModeActive,
+                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                    label = { Text("Song") }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                androidx.compose.material3.FilterChip(
+                                    selected = isVideoModeActive,
+                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                    label = { Text("Video") }
+                                )
+                            }
                         }
 
                         // Remember lambdas to prevent unnecessary recomposition

@@ -345,14 +345,8 @@ fun Thumbnail(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = if (isLandscape) Arrangement.Center else Arrangement.Top
             ) {
-                // Now Playing header - hide in landscape mode
-                if (!isLandscape) {
-                    ThumbnailHeader(
-                        queueTitle = queueTitle,
-                        albumTitle = mediaMetadata?.album?.title,
-                        textColor = textBackgroundColor
-                    )
-                }
+                // Header moved to Player.kt
+
                 
                 // Thumbnail content
                 BoxWithConstraints(
@@ -448,41 +442,30 @@ fun Thumbnail(
  * Header component showing "Now Playing" and queue/album title.
  */
 @Composable
-private fun ThumbnailHeader(
+fun ThumbnailHeader(
     queueTitle: String?,
     albumTitle: String?,
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val isListenTogetherGuest = false
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 48.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.now_playing),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
-            )
-            val playingFrom = queueTitle ?: albumTitle
-            if (!playingFrom.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = playingFrom,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor.copy(alpha = 0.8f),
-                    maxLines = 1,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-        }
+        val playingFrom = queueTitle ?: albumTitle
+        
+        Text(
+            text = if (!playingFrom.isNullOrBlank()) {
+                stringResource(R.string.now_playing_with_context, playingFrom)
+            } else {
+                stringResource(R.string.now_playing)
+            },
+            style = MaterialTheme.typography.titleMedium,
+            color = textColor,
+            maxLines = 1,
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
 
