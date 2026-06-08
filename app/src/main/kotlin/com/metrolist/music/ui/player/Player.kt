@@ -75,6 +75,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -319,6 +320,9 @@ fun BottomSheetPlayer(
     val playbackState by playerConnection.playbackState.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
     val currentSong by playerConnection.currentSong.collectAsStateWithLifecycle(initialValue = null)
+    LaunchedEffect(currentSong) {
+        android.util.Log.d("PlayerDebug", "Player Engine emitted new song: ${currentSong?.song?.title ?: currentSong?.song?.id}")
+    }
     val automix by playerConnection.service.automixItems.collectAsStateWithLifecycle()
     val repeatMode by playerConnection.repeatMode.collectAsStateWithLifecycle()
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsStateWithLifecycle()
@@ -1573,7 +1577,10 @@ fun BottomSheetPlayer(
                             )
 
                             FilledIconButton(
-                                onClick = playerConnection::seekToPrevious,
+                                onClick = {
+                                    android.util.Log.d("PlayerDebug", "Previous Button Clicked")
+                                    playerConnection.seekToPrevious()
+                                },
                                 enabled = canSkipPrevious && !isListenTogetherGuest,
                                 shape = RoundedCornerShape(50),
                                 interactionSource = backInteractionSource,
@@ -1665,7 +1672,10 @@ fun BottomSheetPlayer(
                             Spacer(modifier = Modifier.width(8.dp))
 
                             FilledIconButton(
-                                onClick = playerConnection::seekToNext,
+                                onClick = {
+                                    android.util.Log.d("PlayerDebug", "Next Button Clicked")
+                                    playerConnection.seekToNext()
+                                },
                                 enabled = canSkipNext && !isListenTogetherGuest,
                                 shape = RoundedCornerShape(50),
                                 interactionSource = nextInteractionSource,
@@ -1726,7 +1736,10 @@ fun BottomSheetPlayer(
                                             .size(32.dp)
                                             .align(Alignment.Center)
                                             .alpha(if (isListenTogetherGuest) 0.5f else 1f),
-                                    onClick = playerConnection::seekToPrevious,
+                                    onClick = {
+                                        android.util.Log.d("PlayerDebug", "Previous Button Clicked")
+                                        playerConnection.seekToPrevious()
+                                    },
                                 )
                             }
 
@@ -1794,7 +1807,10 @@ fun BottomSheetPlayer(
                                             .size(32.dp)
                                             .align(Alignment.Center)
                                             .alpha(if (isListenTogetherGuest) 0.5f else 1f),
-                                    onClick = playerConnection::seekToNext,
+                                    onClick = {
+                                        android.util.Log.d("PlayerDebug", "Next Button Clicked")
+                                        playerConnection.seekToNext()
+                                    },
                                 )
                             }
 
@@ -1839,14 +1855,36 @@ fun BottomSheetPlayer(
                             ).padding(bottom = 24.dp)
                             .fillMaxSize(),
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier =
-                            Modifier
-                                .weight(1f)
-                                .nestedScroll(state.preUpPostDownNestedScrollConnection),
+                    Column(
+                        modifier = Modifier.weight(1f)
                     ) {
-                        // Remember lambdas to prevent unnecessary recomposition
+                        val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 8.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            androidx.compose.material3.FilterChip(
+                                selected = !isVideoModeActive,
+                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                label = { Text("Song") }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            androidx.compose.material3.FilterChip(
+                                selected = isVideoModeActive,
+                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                label = { Text("Video") }
+                            )
+                        }
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .nestedScroll(state.preUpPostDownNestedScrollConnection),
+                        ) {
+                            // Remember lambdas to prevent unnecessary recomposition
                         val currentSliderPosition by rememberUpdatedState(sliderPosition)
                         val sliderPositionProvider = remember { { currentSliderPosition } }
                         val isExpandedProvider = remember(state) { { state.isExpanded } }
@@ -1868,28 +1906,31 @@ fun BottomSheetPlayer(
                                     isPlayerExpanded = isExpandedProvider,
                                     isLandscape = true,
                                     isListenTogetherGuest = isListenTogetherGuest,
+                                    isPlaying = effectiveIsPlaying,
+                                    playbackPosition = effectivePosition
                                 )
                             }
                         }
                     }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier =
-                            Modifier
-                                .weight(if (showInlineLyrics) 0.65f else 1f, false)
-                                .animateContentSize()
-                                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
-                    ) {
-                        Spacer(Modifier.weight(1f))
-
-                        mediaMetadata?.let {
-                            controlsContent(it)
-                        }
-
-                        Spacer(Modifier.weight(1f))
-                    }
                 }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier =
+                        Modifier
+                            .weight(if (showInlineLyrics) 0.65f else 1f, false)
+                            .animateContentSize()
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
+                ) {
+                    Spacer(Modifier.weight(1f))
+
+                    mediaMetadata?.let {
+                        controlsContent(it)
+                    }
+
+                    Spacer(Modifier.weight(1f))
+                }
+            }
             }
 
             else -> {
@@ -1905,6 +1946,26 @@ fun BottomSheetPlayer(
                             .padding(bottom = bottomPadding)
                             .animateContentSize(),
                 ) {
+                    val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        androidx.compose.material3.FilterChip(
+                            selected = !isVideoModeActive,
+                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                            label = { Text("Song") }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        androidx.compose.material3.FilterChip(
+                            selected = isVideoModeActive,
+                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                            label = { Text("Video") }
+                        )
+                    }
+
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.weight(1f),
@@ -1930,6 +1991,8 @@ fun BottomSheetPlayer(
                                     modifier = Modifier.nestedScroll(state.preUpPostDownNestedScrollConnection),
                                     isPlayerExpanded = isExpandedProvider,
                                     isListenTogetherGuest = isListenTogetherGuest,
+                                    isPlaying = effectiveIsPlaying,
+                                    playbackPosition = effectivePosition
                                 )
                             }
                         }

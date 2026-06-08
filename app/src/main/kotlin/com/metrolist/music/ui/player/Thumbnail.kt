@@ -12,7 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
+import androidx.media3.common.C
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.metrolist.music.playback.VideoState
 
 import androidx.compose.animation.AnimatedVisibility
@@ -73,7 +75,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import coil3.compose.AsyncImage
@@ -211,6 +212,8 @@ fun Thumbnail(
     isPlayerExpanded: () -> Boolean = { true },
     isLandscape: Boolean = false,
     isListenTogetherGuest: Boolean = false,
+    isPlaying: Boolean,
+    playbackPosition: Long,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val context = LocalContext.current
@@ -274,6 +277,8 @@ fun Thumbnail(
     LaunchedEffect(itemScrollOffset) {
         if (!thumbnailLazyGridState.isScrollInProgress || !swipeThumbnail || itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
 
+        android.util.Log.d("PlayerDebug", "Poster swiped to currentItem: $currentItem, currentMediaIndex: $currentMediaIndex")
+
         if (currentItem > currentMediaIndex && canSkipNext) {
             playerConnection.player.seekToNext()
         } else if (currentItem < currentMediaIndex && canSkipPrevious) {
@@ -282,11 +287,14 @@ fun Thumbnail(
     }
 
     // Update position when song changes
-    LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
+    LaunchedEffect(mediaMetadata?.id) {
         val index = maxOf(0, currentMediaIndex)
         if (index >= 0 && index < mediaItems.size) {
             try {
-                thumbnailLazyGridState.animateScrollToItem(index)
+                // Use instant snap instead of animation if the distance is 0 to avoid jank
+                if (thumbnailLazyGridState.firstVisibleItemIndex != index) {
+                    thumbnailLazyGridState.animateScrollToItem(index)
+                }
             } catch (e: Exception) {
                 thumbnailLazyGridState.scrollToItem(index)
             }
@@ -412,7 +420,9 @@ fun Thumbnail(
                                 isLandscape = isLandscape,
                                 isListenTogetherGuest = isListenTogetherGuest,
                                 currentMediaId = mediaMetadata?.id,
-                                currentMediaThumbnail = mediaMetadata?.thumbnailUrl
+                                currentMediaThumbnail = mediaMetadata?.thumbnailUrl,
+                                isPlaying = isPlaying,
+                                playbackPosition = playbackPosition
                             )
                         }
                     }
@@ -499,6 +509,8 @@ private fun ThumbnailItem(
     isListenTogetherGuest: Boolean = false,
     currentMediaId: String? = null,
     currentMediaThumbnail: String? = null,
+    isPlaying: Boolean,
+    playbackPosition: Long,
     modifier: Modifier = Modifier,
 ) {
     val incrementalSeekSkipEnabled by rememberPreference(SeekExtraSeconds, defaultValue = false)
@@ -570,7 +582,12 @@ private fun ThumbnailItem(
 
                 ThumbnailImage(
                     artworkUri = artworkUriToUse,
-                    cropArtwork = cropAlbumArt
+                    cropArtwork = cropAlbumArt,
+                    mediaId = item.mediaId,
+                    isCurrentTrack = (item.mediaId == currentMediaId),
+                    isPlaying = isPlaying,
+                    playbackPosition = playbackPosition,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             
@@ -615,9 +632,15 @@ private fun HiddenThumbnailPlaceholder(
 private fun ThumbnailImage(
     artworkUri: String?,
     cropArtwork: Boolean,
+    mediaId: String,
+    isCurrentTrack: Boolean,
+    isPlaying: Boolean,
+    playbackPosition: Long,
     modifier: Modifier = Modifier
 ) {
-    val videoUrl by VideoState.currentVideoStreamUrl.collectAsState()
+    val videoUrls by VideoState.videoUrls.collectAsState()
+    val isVideoModeActive by VideoState.isVideoModeActive.collectAsState()
+    val videoUrl = videoUrls[mediaId]
 
     Box(
         modifier = modifier
@@ -627,9 +650,12 @@ private fun ThumbnailImage(
             }
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        if (videoUrl != null) {
+        // Only render video if this specific thumbnail is the active playing track
+        if (isVideoModeActive && isCurrentTrack && videoUrl != null) {
             VideoPlayerSurface(
-                videoUrl = videoUrl!!,
+                videoUrl = videoUrl,
+                isPlaying = isPlaying,
+                playbackPosition = playbackPosition,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
@@ -671,36 +697,58 @@ private fun SeekEffectOverlay(
 @Composable
 private fun VideoPlayerSurface(
     videoUrl: String,
+    isPlaying: Boolean,
+    playbackPosition: Long,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
-    // Instantiate an isolated UI-only ExoPlayer
     val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
-            // Mute the video player so it doesn't double-play with MusicService
-            volume = 0f 
-        }
+        val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+            
+        androidx.media3.exoplayer.ExoPlayer.Builder(context)
+            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory))
+            .build().apply {
+                playWhenReady = isPlaying
+                volume = 0f
+                trackSelectionParameters = trackSelectionParameters.buildUpon()
+                    .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, true)
+                    .build()
+            }
     }
 
-    // Manage the ExoPlayer lifecycle to prevent memory leaks
+    androidx.compose.runtime.LaunchedEffect(isPlaying) {
+        if (isPlaying) exoPlayer.play() else exoPlayer.pause()
+    }
+
+    androidx.compose.runtime.LaunchedEffect(playbackPosition) {
+        val drift = kotlin.math.abs(exoPlayer.currentPosition - playbackPosition)
+        if (drift > 1000L) exoPlayer.seekTo(playbackPosition)
+    }
+
     DisposableEffect(videoUrl) {
         val mediaItem = androidx.media3.common.MediaItem.fromUri(videoUrl)
         exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.seekTo(playbackPosition)
         exoPlayer.prepare()
-
-        onDispose {
-            exoPlayer.release()
-        }
+        onDispose { exoPlayer.release() }
     }
 
-    // Bind ExoPlayer to the UI
     AndroidView(
-        factory = {
-            PlayerView(context).apply {
-                player = exoPlayer
-                useController = false // Hide default ExoPlayer controls
+        factory = { ctx ->
+            androidx.media3.ui.AspectRatioFrameLayout(ctx).apply {
+                setResizeMode(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
+                val textureView = android.view.TextureView(ctx).apply {
+                    exoPlayer.setVideoTextureView(this)
+                }
+                exoPlayer.addListener(object : androidx.media3.common.Player.Listener {
+                    override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
+                        if (videoSize.width > 0 && videoSize.height > 0) {
+                            setAspectRatio(videoSize.width.toFloat() / videoSize.height)
+                        }
+                    }
+                })
+                addView(textureView)
             }
         },
         modifier = modifier.fillMaxSize()

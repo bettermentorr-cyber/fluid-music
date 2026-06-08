@@ -589,7 +589,8 @@ object YTPlayerUtils {
         val videoCapableFormats = adaptiveFormats.filter { !it.isAudio }
         if (videoCapableFormats.isEmpty()) return null
 
-        val maxResolution = if (connectivityManager.isActiveNetworkMetered) 720 else 1080
+        // Cap at 360p on mobile data, 480p on WiFi for the small thumbnail surface
+        val maxResolution = if (connectivityManager.isActiveNetworkMetered) 360 else 480
         val targetFormats = videoCapableFormats.filter { (it.height ?: 0) <= maxResolution }
         val safeFormats = targetFormats.ifEmpty { videoCapableFormats }
 

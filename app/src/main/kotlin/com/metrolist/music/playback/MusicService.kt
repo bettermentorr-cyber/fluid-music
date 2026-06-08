@@ -3236,7 +3236,7 @@ class MusicService :
                 val streamUrl = nonNullPlayback.streamUrl
 
                 // Broadcast the video URL to the Compose UI layer
-                VideoState.updateVideoUrl(nonNullPlayback.videoStreamUrl)
+                VideoState.updateVideoUrl(mediaId, nonNullPlayback.videoStreamUrl)
 
                 songUrlCache[mediaId] =
                     streamUrl to System.currentTimeMillis() + (nonNullPlayback.streamExpiresInSeconds * 1000L)
