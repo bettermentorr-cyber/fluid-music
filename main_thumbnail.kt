@@ -5,18 +5,6 @@
 
 package com.metrolist.music.ui.player
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.common.C
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import com.metrolist.music.playback.VideoState
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -75,12 +63,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-
+import com.metrolist.music.LocalListenTogetherManager
 import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.R
 import com.metrolist.music.constants.CropAlbumArtKey
@@ -91,7 +80,7 @@ import com.metrolist.music.constants.PlayerHorizontalPadding
 import com.metrolist.music.constants.SeekExtraSeconds
 import com.metrolist.music.constants.SwipeThumbnailKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
-
+import com.metrolist.music.listentogether.RoomRole
 import com.metrolist.music.ui.component.CastButton
 import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
@@ -212,8 +201,6 @@ fun Thumbnail(
     isPlayerExpanded: () -> Boolean = { true },
     isLandscape: Boolean = false,
     isListenTogetherGuest: Boolean = false,
-    isPlaying: Boolean,
-    playbackPosition: Long,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val context = LocalContext.current
@@ -248,7 +235,7 @@ fun Thumbnail(
         playerConnection.player.currentMediaItemIndex,
         playerConnection.player.shuffleModeEnabled,
         swipeThumbnail,
-        mediaMetadata?.id
+        mediaMetadata
     ) {
         derivedStateOf {
             getMediaItems(playerConnection.player, swipeThumbnail)
@@ -285,7 +272,7 @@ fun Thumbnail(
     }
 
     // Update position when song changes
-    LaunchedEffect(mediaMetadata?.id, canSkipPrevious, canSkipNext) {
+    LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
         val index = maxOf(0, currentMediaIndex)
         if (index >= 0 && index < mediaItems.size) {
             try {
@@ -415,9 +402,7 @@ fun Thumbnail(
                                 isLandscape = isLandscape,
                                 isListenTogetherGuest = isListenTogetherGuest,
                                 currentMediaId = mediaMetadata?.id,
-                                currentMediaThumbnail = mediaMetadata?.thumbnailUrl,
-                                isPlaying = isPlaying,
-                                playbackPosition = playbackPosition
+                                currentMediaThumbnail = mediaMetadata?.thumbnailUrl
                             )
                         }
                     }
@@ -454,7 +439,9 @@ private fun ThumbnailHeader(
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val isListenTogetherGuest = false
+    val listenTogetherManager = LocalListenTogetherManager.current
+    val listenTogetherRoleState = listenTogetherManager?.role?.collectAsStateWithLifecycle(initialValue = RoomRole.NONE)
+    val isListenTogetherGuest = listenTogetherRoleState?.value == RoomRole.GUEST
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -466,11 +453,20 @@ private fun ThumbnailHeader(
                 .align(Alignment.Center)
                 .padding(horizontal = 48.dp)
         ) {
-            Text(
-                text = stringResource(R.string.now_playing),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
-            )
+            // Listen Together indicator
+            if (listenTogetherRoleState?.value != RoomRole.NONE) {
+                Text(
+                    text = if (listenTogetherRoleState?.value == RoomRole.HOST) "Hosting Listen Together" else "Listening Together",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textColor
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.now_playing),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textColor
+                )
+            }
             val playingFrom = queueTitle ?: albumTitle
             if (!playingFrom.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -504,8 +500,6 @@ private fun ThumbnailItem(
     isListenTogetherGuest: Boolean = false,
     currentMediaId: String? = null,
     currentMediaThumbnail: String? = null,
-    isPlaying: Boolean,
-    playbackPosition: Long,
     modifier: Modifier = Modifier,
 ) {
     val incrementalSeekSkipEnabled by rememberPreference(SeekExtraSeconds, defaultValue = false)
@@ -577,12 +571,7 @@ private fun ThumbnailItem(
 
                 ThumbnailImage(
                     artworkUri = artworkUriToUse,
-                    cropArtwork = cropAlbumArt,
-                    mediaId = item.mediaId,
-                    isCurrentTrack = (item.mediaId == currentMediaId),
-                    isPlaying = isPlaying,
-                    playbackPosition = playbackPosition,
-                    modifier = Modifier.fillMaxSize()
+                    cropArtwork = cropAlbumArt
                 )
             }
             
@@ -627,45 +616,28 @@ private fun HiddenThumbnailPlaceholder(
 private fun ThumbnailImage(
     artworkUri: String?,
     cropArtwork: Boolean,
-    mediaId: String,
-    isCurrentTrack: Boolean,
-    isPlaying: Boolean,
-    playbackPosition: Long,
     modifier: Modifier = Modifier
 ) {
-    val videoUrls by VideoState.videoUrls.collectAsState()
-    val isVideoModeActive by VideoState.isVideoModeActive.collectAsState()
-    val videoUrl = videoUrls[mediaId]
-
     Box(
         modifier = modifier
             .fillMaxSize()
             .graphicsLayer {
+                // Use offscreen compositing for hardware acceleration during animations
                 compositingStrategy = CompositingStrategy.Offscreen
             }
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        // Only render video if this specific thumbnail is the active playing track
-        if (isVideoModeActive && isCurrentTrack && videoUrl != null) {
-            VideoPlayerSurface(
-                videoUrl = videoUrl,
-                isPlaying = isPlaying,
-                playbackPosition = playbackPosition,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(artworkUri)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .networkCachePolicy(CachePolicy.ENABLED)
-                    .build(),
-                contentDescription = null,
-                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(artworkUri)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .build(),
+            contentDescription = null,
+            contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
@@ -686,66 +658,5 @@ private fun SeekEffectOverlay(
         modifier = modifier
             .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
             .padding(8.dp)
-    )
-}
-
-@Composable
-private fun VideoPlayerSurface(
-    videoUrl: String,
-    isPlaying: Boolean,
-    playbackPosition: Long,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val exoPlayer = remember {
-        val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
-            
-        androidx.media3.exoplayer.ExoPlayer.Builder(context)
-            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory))
-            .build().apply {
-                playWhenReady = isPlaying
-                volume = 0f
-                trackSelectionParameters = trackSelectionParameters.buildUpon()
-                    .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, true)
-                    .build()
-            }
-    }
-
-    androidx.compose.runtime.LaunchedEffect(isPlaying) {
-        if (isPlaying) exoPlayer.play() else exoPlayer.pause()
-    }
-
-    androidx.compose.runtime.LaunchedEffect(playbackPosition) {
-        val drift = kotlin.math.abs(exoPlayer.currentPosition - playbackPosition)
-        if (drift > 1000L) exoPlayer.seekTo(playbackPosition)
-    }
-
-    DisposableEffect(videoUrl) {
-        val mediaItem = androidx.media3.common.MediaItem.fromUri(videoUrl)
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.seekTo(playbackPosition)
-        exoPlayer.prepare()
-        onDispose { exoPlayer.release() }
-    }
-
-    AndroidView(
-        factory = { ctx ->
-            androidx.media3.ui.AspectRatioFrameLayout(ctx).apply {
-                setResizeMode(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
-                val textureView = android.view.TextureView(ctx).apply {
-                    exoPlayer.setVideoTextureView(this)
-                }
-                exoPlayer.addListener(object : androidx.media3.common.Player.Listener {
-                    override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
-                        if (videoSize.width > 0 && videoSize.height > 0) {
-                            setAspectRatio(videoSize.width.toFloat() / videoSize.height)
-                        }
-                    }
-                })
-                addView(textureView)
-            }
-        },
-        modifier = modifier.fillMaxSize()
     )
 }

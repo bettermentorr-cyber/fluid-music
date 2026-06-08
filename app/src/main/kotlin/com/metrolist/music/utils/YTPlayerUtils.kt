@@ -33,6 +33,8 @@ import com.metrolist.music.utils.cipher.FunctionNameExtractor
 import com.metrolist.music.utils.cipher.PlayerJsFetcher
 import com.metrolist.music.utils.potoken.PoTokenGenerator
 import com.metrolist.music.utils.potoken.PoTokenResult
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import okhttp3.OkHttpClient
 import timber.log.Timber
 
@@ -263,14 +265,24 @@ object YTPlayerUtils {
 
                 Timber.tag(logTag).d("Format found: ${format.mimeType}, bitrate: ${format.bitrate}")
 
-                streamUrl = findUrlOrNull(format, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
+                val finalFormat = format
+                kotlinx.coroutines.coroutineScope {
+                    val streamUrlDeferred = async {
+                        findUrlOrNull(finalFormat, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
+                    }
+                    val videoStreamUrlDeferred = videoFormat?.let {
+                        async {
+                            findUrlOrNull(it, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
+                        }
+                    }
+
+                    streamUrl = streamUrlDeferred.await()
+                    videoStreamUrl = videoStreamUrlDeferred?.await()
+                }
+
                 if (streamUrl == null) {
                     Timber.tag(logTag).d("Stream URL not found for format")
                     continue
-                }
-
-                if (videoFormat != null) {
-                    videoStreamUrl = findUrlOrNull(videoFormat, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
                 }
 
                 // Apply n-transform for throttle parameter handling
