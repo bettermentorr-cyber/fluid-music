@@ -34,8 +34,6 @@ import com.metrolist.music.utils.cipher.FunctionNameExtractor
 import com.metrolist.music.utils.cipher.PlayerJsFetcher
 import com.metrolist.music.utils.potoken.PoTokenGenerator
 import com.metrolist.music.utils.potoken.PoTokenResult
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import okhttp3.OkHttpClient
 import timber.log.Timber
 
@@ -158,8 +156,6 @@ object YTPlayerUtils {
         val playbackTracking = mainPlayerResponse.playbackTracking
         var format: PlayerResponse.StreamingData.Format? = null
         var streamUrl: String? = null
-        var videoFormat: PlayerResponse.StreamingData.Format? = null
-        var videoStreamUrl: String? = null
         var streamExpiresInSeconds: Int? = null
         var streamPlayerResponse: PlayerResponse? = null
         val retryMainPlayerResponse: PlayerResponse? = if (usedAgeRestrictedClient != null) mainPlayerResponse else null
@@ -194,8 +190,6 @@ object YTPlayerUtils {
             // reset for each client
             format = null
             streamUrl = null
-            videoFormat = null
-            videoStreamUrl = null
             streamExpiresInSeconds = null
 
             // decide which client to use for streams and load its player response
@@ -256,11 +250,6 @@ object YTPlayerUtils {
                         connectivityManager,
                     )
 
-                videoFormat = findVideoFormat(
-                    responseToUse,
-                    connectivityManager,
-                )
-
                 if (format == null) {
                     Timber.tag(logTag).d("No suitable format found for client: ${if (clientIndex == -1) MAIN_CLIENT.clientName else STREAM_FALLBACK_CLIENTS[clientIndex].clientName}")
                     continue
@@ -268,21 +257,7 @@ object YTPlayerUtils {
 
                 Timber.tag(logTag).d("Format found: ${format.mimeType}, bitrate: ${format.bitrate}")
 
-                val finalFormat = format
-                kotlinx.coroutines.coroutineScope {
-                    val streamUrlDeferred = async {
-                        findUrlOrNull(finalFormat, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
-                    }
-                    val videoStreamUrlDeferred = videoFormat?.let {
-                        async {
-                            findUrlOrNull(it, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
-                        }
-                    }
-
-                    streamUrl = streamUrlDeferred.await()
-                    videoStreamUrl = videoStreamUrlDeferred?.await()
-                }
-
+                streamUrl = findUrlOrNull(format, videoId, responseToUse, skipNewPipe = wasOriginallyAgeRestricted)
                 if (streamUrl == null) {
                     Timber.tag(logTag).d("Stream URL not found for format")
                     continue
@@ -344,19 +319,6 @@ object YTPlayerUtils {
                         Timber.tag(TAG).e(e, "N-transform or pot append failed: ${e.message}")
                         Timber.tag(TAG).e("Stack trace: ${e.stackTraceToString().take(500)}")
                         // Continue with original URL
-                    }
-
-                    if (videoStreamUrl != null) {
-                        try {
-                            videoStreamUrl = CipherDeobfuscator.transformNParamInUrl(videoStreamUrl!!)
-                            val needsPoToken = currentClient.useWebPoTokens && poToken?.streamingDataPoToken != null
-                            if (needsPoToken) {
-                                val separator = if ("?" in videoStreamUrl!!) "&" else "?"
-                                videoStreamUrl = "${videoStreamUrl}${separator}pot=${Uri.encode(poToken.streamingDataPoToken)}"
-                            }
-                        } catch (e: Exception) {
-                            Timber.tag(TAG).e(e, "Video n-transform or pot append failed: ${e.message}")
-                        }
                     }
                 } else {
                     Timber.tag(TAG).d("Skipping n-transform (not required for this client/content)")
@@ -595,34 +557,6 @@ object YTPlayerUtils {
 
         return format
     }
-
-    private fun findVideoFormat(
-        playerResponse: PlayerResponse,
-        connectivityManager: ConnectivityManager
-    ): PlayerResponse.StreamingData.Format? {
-        Timber.tag(logTag).d("Finding video format, network metered: ${connectivityManager.isActiveNetworkMetered}")
-
-        val adaptiveFormats = playerResponse.streamingData?.adaptiveFormats ?: return null
-        val videoCapableFormats = adaptiveFormats.filter { !it.isAudio }
-        if (videoCapableFormats.isEmpty()) return null
-
-        // Cap at 360p on mobile data, 480p on WiFi for the small thumbnail surface
-        val maxResolution = if (connectivityManager.isActiveNetworkMetered) 360 else 480
-        val targetFormats = videoCapableFormats.filter { (it.height ?: 0) <= maxResolution }
-        val safeFormats = targetFormats.ifEmpty { videoCapableFormats }
-
-        fun scoreVideoCodec(mimeType: String): Int = when {
-            mimeType.contains("avc1", ignoreCase = true) -> 2
-            mimeType.contains("vp9", ignoreCase = true) -> 1
-            else -> 0
-        }
-
-        return safeFormats.maxWithOrNull(
-            compareBy<PlayerResponse.StreamingData.Format> { scoreVideoCodec(it.mimeType) }
-                .thenBy { it.height ?: 0 }
-        )
-    }
-
     /**
      * Checks if the stream url returns a successful status.
      * If this returns true the url is likely to work.
