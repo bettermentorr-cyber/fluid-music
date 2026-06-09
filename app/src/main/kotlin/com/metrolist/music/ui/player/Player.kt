@@ -53,6 +53,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -115,6 +117,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -319,6 +322,7 @@ fun BottomSheetPlayer(
 
     val playbackState by playerConnection.playbackState.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
+    val queueTitle by playerConnection.queueTitle.collectAsStateWithLifecycle()
     val currentSong by playerConnection.currentSong.collectAsStateWithLifecycle(initialValue = null)
     LaunchedEffect(currentSong) {
         android.util.Log.d("PlayerDebug", "Player Engine emitted new song: ${currentSong?.song?.title ?: currentSong?.song?.id}")
@@ -991,7 +995,7 @@ fun BottomSheetPlayer(
                         Text(
                             text = title,
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             color = TextBackgroundColor,
@@ -1053,7 +1057,10 @@ fun BottomSheetPlayer(
                                 var clickOffset by remember { mutableStateOf<Offset?>(null) }
                                 Text(
                                     text = annotatedString,
-                                    style = MaterialTheme.typography.titleMedium.copy(color = TextBackgroundColor),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = TextBackgroundColor,
+                                        fontWeight = FontWeight.Normal
+                                    ),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     onTextLayout = { layoutResult = it },
@@ -1855,35 +1862,102 @@ fun BottomSheetPlayer(
                             ).padding(bottom = 24.dp)
                             .fillMaxSize(),
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .nestedScroll(state.preUpPostDownNestedScrollConnection),
                     ) {
                         val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
-                        Row(
+
+                        // Wrap the header text and chips in a tight top-aligned Column 
+                        // to cleanly isolate them from the poster container below
+                        Column(
                             modifier = Modifier
+                                .align(Alignment.TopCenter)
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 8.dp),
-                            horizontalArrangement = Arrangement.Center
+                                .statusBarsPadding()
+                                .padding(top = 8.dp)
+                                .zIndex(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            androidx.compose.material3.FilterChip(
-                                selected = !isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                                label = { Text("Song") }
+                            // 1. Let the system draw the text first
+                            ThumbnailHeader(
+                                queueTitle = queueTitle,
+                                albumTitle = mediaMetadata?.album?.title,
+                                textColor = TextBackgroundColor
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            androidx.compose.material3.FilterChip(
-                                selected = isVideoModeActive,
-                                onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                                label = { Text("Video") }
-                            )
+                            
+                            // 2. Chips align automatically underneath the flattened line
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp, bottom = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(
+                                            width = 1.dp,
+                                            color = TextBackgroundColor.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                ) {
+                                    androidx.compose.material3.FilterChip(
+                                        selected = !isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            bottomStart = 16.dp,
+                                            topEnd = 0.dp,
+                                            bottomEnd = 0.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Song",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                    androidx.compose.material3.FilterChip(
+                                        selected = isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            bottomStart = 0.dp,
+                                            topEnd = 16.dp,
+                                            bottomEnd = 16.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Video",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                }
+                            }
                         }
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier =
-                                Modifier
-                                    .weight(1f)
-                                    .nestedScroll(state.preUpPostDownNestedScrollConnection),
-                        ) {
                             // Remember lambdas to prevent unnecessary recomposition
                         val currentSliderPosition by rememberUpdatedState(sliderPosition)
                         val sliderPositionProvider = remember { { currentSliderPosition } }
@@ -1912,7 +1986,6 @@ fun BottomSheetPlayer(
                             }
                         }
                     }
-                }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -1946,30 +2019,100 @@ fun BottomSheetPlayer(
                             .padding(bottom = bottomPadding)
                             .animateContentSize(),
                 ) {
-                    val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 8.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        androidx.compose.material3.FilterChip(
-                            selected = !isVideoModeActive,
-                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                            label = { Text("Song") }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        androidx.compose.material3.FilterChip(
-                            selected = isVideoModeActive,
-                            onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                            label = { Text("Video") }
-                        )
-                    }
-
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.weight(1f),
                     ) {
+                        val isVideoModeActive by com.metrolist.music.playback.VideoState.isVideoModeActive.collectAsState()
+
+                        // Wrap the header text and chips in a tight top-aligned Column 
+                        // to cleanly isolate them from the poster container below
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(top = 8.dp)
+                                .zIndex(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // 1. Let the system draw the text first
+                            ThumbnailHeader(
+                                queueTitle = queueTitle,
+                                albumTitle = mediaMetadata?.album?.title,
+                                textColor = TextBackgroundColor
+                            )
+                            
+                            // 2. Chips align automatically underneath the flattened line
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp, bottom = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(
+                                            width = 1.dp,
+                                            color = TextBackgroundColor.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                ) {
+                                    androidx.compose.material3.FilterChip(
+                                        selected = !isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            bottomStart = 16.dp,
+                                            topEnd = 0.dp,
+                                            bottomEnd = 0.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Song",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                    androidx.compose.material3.FilterChip(
+                                        selected = isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            bottomStart = 0.dp,
+                                            topEnd = 16.dp,
+                                            bottomEnd = 16.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Video",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         // Remember lambdas to prevent unnecessary recomposition
                         val currentSliderPosition by rememberUpdatedState(sliderPosition)
                         val sliderPositionProvider = remember { { currentSliderPosition } }
@@ -1988,7 +2131,9 @@ fun BottomSheetPlayer(
                             } else {
                                 Thumbnail(
                                     sliderPositionProvider = sliderPositionProvider,
-                                    modifier = Modifier.nestedScroll(state.preUpPostDownNestedScrollConnection),
+                                    modifier = Modifier
+                                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                                        .padding(top = 50.dp),
                                     isPlayerExpanded = isExpandedProvider,
                                     isListenTogetherGuest = isListenTogetherGuest,
                                     isPlaying = effectiveIsPlaying,

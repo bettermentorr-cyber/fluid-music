@@ -248,7 +248,7 @@ fun Thumbnail(
         playerConnection.player.currentMediaItemIndex,
         playerConnection.player.shuffleModeEnabled,
         swipeThumbnail,
-        mediaMetadata?.id
+        mediaMetadata
     ) {
         derivedStateOf {
             getMediaItems(playerConnection.player, swipeThumbnail)
@@ -285,7 +285,7 @@ fun Thumbnail(
     }
 
     // Update position when song changes
-    LaunchedEffect(mediaMetadata?.id, canSkipPrevious, canSkipNext) {
+    LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
         val index = maxOf(0, currentMediaIndex)
         if (index >= 0 && index < mediaItems.size) {
             try {
@@ -345,14 +345,7 @@ fun Thumbnail(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = if (isLandscape) Arrangement.Center else Arrangement.Top
             ) {
-                // Now Playing header - hide in landscape mode
-                if (!isLandscape) {
-                    ThumbnailHeader(
-                        queueTitle = queueTitle,
-                        albumTitle = mediaMetadata?.album?.title,
-                        textColor = textBackgroundColor
-                    )
-                }
+                // Header moved to Player.kt
                 
                 // Thumbnail content
                 BoxWithConstraints(
@@ -448,41 +441,33 @@ fun Thumbnail(
  * Header component showing "Now Playing" and queue/album title.
  */
 @Composable
-private fun ThumbnailHeader(
+fun ThumbnailHeader(
     queueTitle: String?,
     albumTitle: String?,
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val isListenTogetherGuest = false
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 48.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.now_playing),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
-            )
-            val playingFrom = queueTitle ?: albumTitle
-            if (!playingFrom.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = playingFrom,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor.copy(alpha = 0.8f),
-                    maxLines = 1,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
-        }
+        val playingFrom = queueTitle ?: albumTitle
+        
+        Text(
+            text = if (!playingFrom.isNullOrBlank()) {
+                stringResource(R.string.now_playing_with_context, playingFrom)
+            } else {
+                stringResource(R.string.now_playing)
+            },
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 12.sp,              // Increase/decrease size (e.g. 18.sp, 20.sp)
+                fontWeight = FontWeight.W500    // Set thickness (e.g. FontWeight.Bold, FontWeight.W700, FontWeight.ExtraBold)
+            ),
+            color = textColor,
+            maxLines = 1,
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
 
