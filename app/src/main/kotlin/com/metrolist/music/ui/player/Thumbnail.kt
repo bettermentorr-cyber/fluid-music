@@ -461,7 +461,10 @@ fun ThumbnailHeader(
             } else {
                 stringResource(R.string.now_playing)
             },
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 12.sp,              // Increase/decrease size (e.g. 18.sp, 20.sp)
+                fontWeight = FontWeight.W500    // Set thickness (e.g. FontWeight.Bold, FontWeight.W700, FontWeight.ExtraBold)
+            ),
             color = textColor,
             maxLines = 1,
             modifier = Modifier.align(Alignment.Center)
