@@ -85,6 +85,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -1066,12 +1067,55 @@ fun OriginalLyrics(
                         // Smaller scale for background vocals
                         val bgScale = if (item.isBackground) 0.85f else 1f
 
+                        val itemKey = "$index-${item.time}"
                         Column(
                             modifier =
                                 itemModifier.graphicsLayer {
                                     this.alpha = if (item.isBackground) alpha * 0.8f else alpha
                                     this.scaleX = scale * bgScale
                                     this.scaleY = scale * bgScale
+
+                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                        val isActive = index == displayedCurrentLineIndex || isLineAtSameTime
+                                        if (isActive) {
+                                            renderEffect = null
+                                        } else {
+                                            val layoutInfo = lazyListState.layoutInfo
+                                            val visibleItems = layoutInfo.visibleItemsInfo
+                                            val activeItemKey = "$displayedCurrentLineIndex-${lines.getOrNull(displayedCurrentLineIndex)?.time}"
+                                            val activeItemInfo = visibleItems.firstOrNull { it.key == activeItemKey }
+                                            val activeCenter = if (activeItemInfo != null) {
+                                                activeItemInfo.offset + activeItemInfo.size / 2f
+                                            } else {
+                                                (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2f
+                                            }
+                                            val itemInfo = visibleItems.firstOrNull { it.key == itemKey }
+                                            if (itemInfo != null) {
+                                                val itemCenter = itemInfo.offset + itemInfo.size / 2f
+                                                val distance = itemCenter - activeCenter
+                                                val fadeDistance = if (distance < 0f) activeCenter else (layoutInfo.viewportEndOffset - activeCenter)
+                                                val indexDiff = index - displayedCurrentLineIndex
+                                                val maxBlurPx = when (indexDiff) {
+                                                    -1 -> 8.dp.toPx()
+                                                    1 -> 9.dp.toPx()
+                                                    else -> 12.dp.toPx()
+                                                }
+                                                val blurRatio = if (fadeDistance > 0f) (kotlin.math.abs(distance) / fadeDistance).coerceIn(0f, 1f) else 0f
+                                                val blurPx = blurRatio * maxBlurPx
+                                                if (blurPx > 0.5f) {
+                                                    renderEffect = android.graphics.RenderEffect.createBlurEffect(
+                                                        blurPx,
+                                                        blurPx,
+                                                        android.graphics.Shader.TileMode.CLAMP
+                                                    ).asComposeRenderEffect()
+                                                } else {
+                                                    renderEffect = null
+                                                }
+                                            } else {
+                                                renderEffect = null
+                                            }
+                                        }
+                                    }
                                 },
                             horizontalAlignment = agentAlignment,
                         ) {

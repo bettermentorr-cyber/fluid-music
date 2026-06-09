@@ -63,6 +63,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -747,10 +749,41 @@ fun ExperimentalLyrics(
                         )
 
                         Box(
-                            modifier = Modifier.fillMaxWidth().layout { m, c -> 
-                                val p = m.measure(c.copy(maxHeight = Constraints.Infinity))
-                                layout(p.width, 0) { p.place(0, 0) }
-                            }.offset { IntOffset(0, (animatedOffset + userManualOffset).roundToInt()) }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .layout { m, c ->
+                                    val p = m.measure(c.copy(maxHeight = Constraints.Infinity))
+                                    layout(p.width, 0) { p.place(0, 0) }
+                                }
+                                .offset { IntOffset(0, (animatedOffset + userManualOffset).roundToInt()) }
+                                .graphicsLayer {
+                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                        val isActive = listItem is LyricsListItem.Line && activeLineIndices.contains(listItem.index)
+                                        if (isActive) {
+                                            renderEffect = null
+                                        } else {
+                                            val indexDiff = listIndex - activeListIndex
+                                            val maxBlurPx = when (indexDiff) {
+                                                -1 -> 8.dp.toPx()
+                                                1 -> 9.dp.toPx()
+                                                else -> 12.dp.toPx()
+                                            }
+                                            val distance = animatedOffset + userManualOffset - anchorY
+                                            val fadeDistance = if (distance < 0f) anchorY else (maxHeightPx - anchorY)
+                                            val blurRatio = if (fadeDistance > 0f) (kotlin.math.abs(distance) / fadeDistance).coerceIn(0f, 1f) else 0f
+                                            val blurPx = blurRatio * maxBlurPx
+                                            if (blurPx > 0.5f) {
+                                                renderEffect = android.graphics.RenderEffect.createBlurEffect(
+                                                    blurPx,
+                                                    blurPx,
+                                                    android.graphics.Shader.TileMode.CLAMP
+                                                ).asComposeRenderEffect()
+                                            } else {
+                                                renderEffect = null
+                                            }
+                                        }
+                                    }
+                                }
                         ) {
                             when (listItem) {
                                 is LyricsListItem.Indicator -> {

@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -1895,56 +1896,66 @@ fun BottomSheetPlayer(
                                     .padding(top = 4.dp, bottom = 8.dp),
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                androidx.compose.material3.FilterChip(
-                                    selected = !isVideoModeActive,
-                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                                    modifier = Modifier.height(28.dp),
-                                    border = null,
-                                    shape = RoundedCornerShape(
-                                        topStart = 16.dp,
-                                        bottomStart = 16.dp,
-                                        topEnd = 0.dp,
-                                        bottomEnd = 0.dp
-                                    ),
-                                    colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f),
-                                        labelColor = TextBackgroundColor.copy(alpha = 0.7f),
-                                        selectedContainerColor = textButtonColor,
-                                        selectedLabelColor = iconButtonColor
-                                    ),
-                                    label = {
-                                        Text(
-                                            text = "Song",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Normal
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(
+                                            width = 1.dp,
+                                            color = TextBackgroundColor.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(16.dp)
                                         )
-                                    }
-                                )
-                                androidx.compose.material3.FilterChip(
-                                    selected = isVideoModeActive,
-                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                                    modifier = Modifier.height(28.dp),
-                                    border = null,
-                                    shape = RoundedCornerShape(
-                                        topStart = 0.dp,
-                                        bottomStart = 0.dp,
-                                        topEnd = 16.dp,
-                                        bottomEnd = 16.dp
-                                    ),
-                                    colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f),
-                                        labelColor = TextBackgroundColor.copy(alpha = 0.7f),
-                                        selectedContainerColor = textButtonColor,
-                                        selectedLabelColor = iconButtonColor
-                                    ),
-                                    label = {
-                                        Text(
-                                            text = "Video",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Normal
-                                        )
-                                    }
-                                )
+                                ) {
+                                    androidx.compose.material3.FilterChip(
+                                        selected = !isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            bottomStart = 16.dp,
+                                            topEnd = 0.dp,
+                                            bottomEnd = 0.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Song",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                    androidx.compose.material3.FilterChip(
+                                        selected = isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            bottomStart = 0.dp,
+                                            topEnd = 16.dp,
+                                            bottomEnd = 16.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Video",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
 
@@ -2040,56 +2051,66 @@ fun BottomSheetPlayer(
                                     .padding(top = 4.dp, bottom = 8.dp),
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                androidx.compose.material3.FilterChip(
-                                    selected = !isVideoModeActive,
-                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
-                                    modifier = Modifier.height(28.dp),
-                                    border = null,
-                                    shape = RoundedCornerShape(
-                                        topStart = 16.dp,
-                                        bottomStart = 16.dp,
-                                        topEnd = 0.dp,
-                                        bottomEnd = 0.dp
-                                    ),
-                                    colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f),
-                                        labelColor = TextBackgroundColor.copy(alpha = 0.7f),
-                                        selectedContainerColor = textButtonColor,
-                                        selectedLabelColor = iconButtonColor
-                                    ),
-                                    label = {
-                                        Text(
-                                            text = "Song",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Normal
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(
+                                            width = 1.dp,
+                                            color = TextBackgroundColor.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(16.dp)
                                         )
-                                    }
-                                )
-                                androidx.compose.material3.FilterChip(
-                                    selected = isVideoModeActive,
-                                    onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
-                                    modifier = Modifier.height(28.dp),
-                                    border = null,
-                                    shape = RoundedCornerShape(
-                                        topStart = 0.dp,
-                                        bottomStart = 0.dp,
-                                        topEnd = 16.dp,
-                                        bottomEnd = 16.dp
-                                    ),
-                                    colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f),
-                                        labelColor = TextBackgroundColor.copy(alpha = 0.7f),
-                                        selectedContainerColor = textButtonColor,
-                                        selectedLabelColor = iconButtonColor
-                                    ),
-                                    label = {
-                                        Text(
-                                            text = "Video",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Normal
-                                        )
-                                    }
-                                )
+                                ) {
+                                    androidx.compose.material3.FilterChip(
+                                        selected = !isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(false) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            bottomStart = 16.dp,
+                                            topEnd = 0.dp,
+                                            bottomEnd = 0.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Song",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                    androidx.compose.material3.FilterChip(
+                                        selected = isVideoModeActive,
+                                        onClick = { com.metrolist.music.playback.VideoState.setVideoMode(true) },
+                                        modifier = Modifier.height(28.dp),
+                                        border = null,
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            bottomStart = 0.dp,
+                                            topEnd = 16.dp,
+                                            bottomEnd = 16.dp
+                                        ),
+                                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                            containerColor = TextBackgroundColor.copy(alpha = 0.08f),
+                                            labelColor = TextBackgroundColor.copy(alpha = 0.7f),
+                                            selectedContainerColor = textButtonColor,
+                                            selectedLabelColor = iconButtonColor
+                                        ),
+                                        label = {
+                                            Text(
+                                                text = "Video",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
 
