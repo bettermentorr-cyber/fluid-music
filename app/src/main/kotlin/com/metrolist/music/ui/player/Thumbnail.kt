@@ -452,22 +452,29 @@ fun ThumbnailHeader(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        val playingFrom = queueTitle ?: albumTitle
-        
-        Text(
-            text = if (!playingFrom.isNullOrBlank()) {
-                stringResource(R.string.now_playing_with_context, playingFrom)
-            } else {
-                stringResource(R.string.now_playing)
-            },
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            color = textColor,
-            maxLines = 1,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 48.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.now_playing),
+                style = MaterialTheme.typography.titleMedium,
+                color = textColor
+            )
+            val playingFrom = queueTitle ?: albumTitle
+            if (!playingFrom.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = playingFrom,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textColor.copy(alpha = 0.8f),
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee()
+                )
+            }
+        }
     }
 }
 
