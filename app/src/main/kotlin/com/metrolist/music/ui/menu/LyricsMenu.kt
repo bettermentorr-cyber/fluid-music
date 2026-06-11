@@ -395,6 +395,7 @@ fun LyricsMenu(
             NewActionGrid(
                 actions =
                     listOf(
+/*
                         NewAction(
                             icon = {
                                 Icon(
@@ -409,6 +410,7 @@ fun LyricsMenu(
                                 showEditDialog = true
                             },
                         ),
+*/
                         NewAction(
                             icon = {
                                 Icon(
@@ -539,6 +541,7 @@ fun LyricsMenu(
                         )
                     }
                     
+/*
                     add(
                         Material3MenuItemData(
                             title = { Text(stringResource(R.string.respect_agent_positioning)) },
@@ -576,6 +579,7 @@ fun LyricsMenu(
                             }
                         )
                     )
+*/
                     
                     add(
                         Material3MenuItemData(
@@ -615,6 +619,7 @@ fun LyricsMenu(
                         )
                     )
                     
+/*
                     add(
                         Material3MenuItemData(
                             title = { Text(stringResource(R.string.lyrics_offset)) },
@@ -637,6 +642,7 @@ fun LyricsMenu(
                             }
                         )
                     )
+*/
                     
                     add(
                         Material3MenuItemData(

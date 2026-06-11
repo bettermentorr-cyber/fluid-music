@@ -167,7 +167,7 @@ fun ExperimentalLyrics(
     val romanizeLyricsList = rememberPreference(LyricsRomanizeList, "")
     val romanizeAsMain by rememberPreference(LyricsRomanizeAsMainKey, false)
     val romanizeCyrillicByLine by rememberPreference(LyricsRomanizeCyrillicByLineKey, false)
-    val respectAgentPositioning by rememberPreference(RespectAgentPositioningKey, true)
+    val respectAgentPositioning = false // by rememberPreference(RespectAgentPositioningKey, true)
     val showIntervalIndicator by rememberPreference(ShowIntervalIndicatorKey, true)
     
     // AI Translation Preferences

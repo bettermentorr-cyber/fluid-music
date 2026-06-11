@@ -253,6 +253,7 @@ fun AppearanceSettings(
     var showLyricsAnimationStyleDialog by remember { mutableStateOf(false) }
     var showLyricsTextSizeDialog by remember { mutableStateOf(false) }
     var showLyricsLineSpacingDialog by remember { mutableStateOf(false) }
+    var isLyricsMoreSettingsExpanded by remember { mutableStateOf(false) }
 
     val (sliderStyle, onSliderStyleChange) =
         rememberEnumPreference(
@@ -1445,153 +1446,178 @@ fun AppearanceSettings(
                                 onClick = { onLyricsGlowEffectChange(!lyricsGlowEffect) },
                             ),
                         )
-                        add(
-                            Material3SettingsItem(
-                                icon = painterResource(R.drawable.lyrics),
-                                title = { Text(stringResource(R.string.lyrics_animation_style_title)) },
-                                description = {
-                                    Text(
-                                        when (lyricsAnimationStyle) {
-                                            LyricsAnimationStyle.NONE -> stringResource(R.string.lyrics_animation_none)
-                                            LyricsAnimationStyle.FADE -> stringResource(R.string.lyrics_animation_fade)
-                                            LyricsAnimationStyle.GLOW -> stringResource(R.string.lyrics_animation_glow)
-                                            LyricsAnimationStyle.SLIDE -> stringResource(R.string.lyrics_animation_slide)
-                                            LyricsAnimationStyle.KARAOKE -> stringResource(R.string.lyrics_animation_karaoke)
-                                            LyricsAnimationStyle.APPLE -> stringResource(R.string.lyrics_animation_apple)
-                                        },
-                                    )
-                                },
-                                onClick = { showLyricsAnimationStyleDialog = true },
-                            ),
-                        )
-                        add(
-                            Material3SettingsItem(
-                                icon = painterResource(R.drawable.lyrics),
-                                title = { Text(stringResource(R.string.lyrics_text_size)) },
-                                description = { Text("${lyricsTextSize.roundToInt()} sp") },
-                                onClick = { showLyricsTextSizeDialog = true },
-                            ),
-                        )
-                        add(
-                            Material3SettingsItem(
-                                icon = painterResource(R.drawable.lyrics),
-                                title = { Text(stringResource(R.string.lyrics_line_spacing)) },
-                                description = { Text(String.format(Locale.US, "%.1f", lyricsLineSpacing)) },
-                                onClick = { showLyricsLineSpacingDialog = true },
-                            ),
-                        )
                     }
 
                     add(
                         Material3SettingsItem(
                             icon = painterResource(R.drawable.lyrics),
-                            title = { Text(stringResource(R.string.lyrics_text_position)) },
-                            description = {
-                                Text(
-                                    when (lyricsPosition) {
-                                        LyricsPosition.LEFT -> stringResource(R.string.left)
-                                        LyricsPosition.CENTER -> stringResource(R.string.center)
-                                        LyricsPosition.RIGHT -> stringResource(R.string.right)
-                                    },
+                            title = { Text(stringResource(R.string.more_settings)) },
+                            trailingContent = {
+                                Icon(
+                                    painter = painterResource(if (isLyricsMoreSettingsExpanded) R.drawable.expand_less else R.drawable.expand_more),
+                                    contentDescription = null
                                 )
                             },
-                            onClick = { showLyricsPositionDialog = true },
-                        ),
+                            onClick = { isLyricsMoreSettingsExpanded = !isLyricsMoreSettingsExpanded }
+                        )
                     )
-                    add(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.lyrics),
-                            title = { Text(stringResource(R.string.respect_agent_positioning)) },
-                            description = { Text(stringResource(R.string.respect_agent_positioning_desc)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = respectAgentPositioning,
-                                    onCheckedChange = onRespectAgentPositioningChange,
-                                    thumbContent = {
-                                        Icon(
-                                            painter =
-                                                painterResource(
-                                                    id = if (respectAgentPositioning) R.drawable.check else R.drawable.close,
-                                                ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+
+                    if (isLyricsMoreSettingsExpanded) {
+                        if (!experimentalLyrics) {
+                            add(
+                                Material3SettingsItem(
+                                    icon = painterResource(R.drawable.lyrics),
+                                    title = { Text(stringResource(R.string.lyrics_animation_style_title)) },
+                                    description = {
+                                        Text(
+                                            when (lyricsAnimationStyle) {
+                                                LyricsAnimationStyle.NONE -> stringResource(R.string.lyrics_animation_none)
+                                                LyricsAnimationStyle.FADE -> stringResource(R.string.lyrics_animation_fade)
+                                                LyricsAnimationStyle.GLOW -> stringResource(R.string.lyrics_animation_glow)
+                                                LyricsAnimationStyle.SLIDE -> stringResource(R.string.lyrics_animation_slide)
+                                                LyricsAnimationStyle.KARAOKE -> stringResource(R.string.lyrics_animation_karaoke)
+                                                LyricsAnimationStyle.APPLE -> stringResource(R.string.lyrics_animation_apple)
+                                            },
                                         )
                                     },
-                                )
-                            },
-                            onClick = { onRespectAgentPositioningChange(!respectAgentPositioning) },
-                        ),
-                    )
-                    add(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.lyrics),
-                            title = { Text(stringResource(R.string.lyrics_click_change)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = lyricsClick,
-                                    onCheckedChange = onLyricsClickChange,
-                                    thumbContent = {
-                                        Icon(
-                                            painter =
-                                                painterResource(
-                                                    id = if (lyricsClick) R.drawable.check else R.drawable.close,
-                                                ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    },
-                                )
-                            },
-                            onClick = { onLyricsClickChange(!lyricsClick) },
-                        ),
-                    )
-                    add(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.lyrics),
-                            title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = lyricsScroll,
-                                    onCheckedChange = onLyricsScrollChange,
-                                    thumbContent = {
-                                        Icon(
-                                            painter =
-                                                painterResource(
-                                                    id = if (lyricsScroll) R.drawable.check else R.drawable.close,
-                                                ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    },
-                                )
-                            },
-                            onClick = { onLyricsScrollChange(!lyricsScroll) },
-                        ),
-                    )
-                    add(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.lyrics),
-                            title = { Text(stringResource(R.string.hide_status_bar_fullscreen)) },
-                            description = { Text(stringResource(R.string.hide_status_bar_fullscreen_desc)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = hideStatusBarOnFullscreen,
-                                    onCheckedChange = onHideStatusBarOnFullscreenChange,
-                                    thumbContent = {
-                                        Icon(
-                                            painter =
-                                                painterResource(
-                                                    id = if (hideStatusBarOnFullscreen) R.drawable.check else R.drawable.close,
-                                                ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    },
-                                )
-                            },
-                            onClick = { onHideStatusBarOnFullscreenChange(!hideStatusBarOnFullscreen) },
-                        ),
-                    )
+                                    onClick = { showLyricsAnimationStyleDialog = true },
+                                ),
+                            )
+/*
+                            add(
+                                Material3SettingsItem(
+                                    icon = painterResource(R.drawable.lyrics),
+                                    title = { Text(stringResource(R.string.lyrics_text_size)) },
+                                    description = { Text("${lyricsTextSize.roundToInt()} sp") },
+                                    onClick = { showLyricsTextSizeDialog = true },
+                                ),
+                            )
+                            add(
+                                Material3SettingsItem(
+                                    icon = painterResource(R.drawable.lyrics),
+                                    title = { Text(stringResource(R.string.lyrics_line_spacing)) },
+                                    description = { Text(String.format(Locale.US, "%.1f", lyricsLineSpacing)) },
+                                    onClick = { showLyricsLineSpacingDialog = true },
+                                ),
+                            )
+*/
+                        }
+
+/*
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.lyrics),
+                                title = { Text(stringResource(R.string.lyrics_text_position)) },
+                                description = {
+                                    Text(
+                                        when (lyricsPosition) {
+                                            LyricsPosition.LEFT -> stringResource(R.string.left)
+                                            LyricsPosition.CENTER -> stringResource(R.string.center)
+                                            LyricsPosition.RIGHT -> stringResource(R.string.right)
+                                        },
+                                    )
+                                },
+                                onClick = { showLyricsPositionDialog = true },
+                            ),
+                        )
+*/
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.lyrics),
+                                title = { Text(stringResource(R.string.lyrics_click_change)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = lyricsClick,
+                                        onCheckedChange = onLyricsClickChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (lyricsClick) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onLyricsClickChange(!lyricsClick) },
+                            ),
+                        )
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.lyrics),
+                                title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = lyricsScroll,
+                                        onCheckedChange = onLyricsScrollChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (lyricsScroll) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onLyricsScrollChange(!lyricsScroll) },
+                            ),
+                        )
+/*
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.lyrics),
+                                title = { Text(stringResource(R.string.respect_agent_positioning)) },
+                                description = { Text(stringResource(R.string.respect_agent_positioning_desc)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = respectAgentPositioning,
+                                        onCheckedChange = onRespectAgentPositioningChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (respectAgentPositioning) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onRespectAgentPositioningChange(!respectAgentPositioning) },
+                            ),
+                        )
+*/
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.lyrics),
+                                title = { Text(stringResource(R.string.hide_status_bar_fullscreen)) },
+                                description = { Text(stringResource(R.string.hide_status_bar_fullscreen_desc)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = hideStatusBarOnFullscreen,
+                                        onCheckedChange = onHideStatusBarOnFullscreenChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (hideStatusBarOnFullscreen) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onHideStatusBarOnFullscreenChange(!hideStatusBarOnFullscreen) },
+                            ),
+                        )
+                    }
                 },
         )
 
