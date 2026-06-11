@@ -97,6 +97,24 @@ import com.metrolist.music.ui.component.Material3MenuItemData
 import com.metrolist.music.ui.component.NewAction
 import com.metrolist.music.ui.component.NewActionGrid
 import com.metrolist.music.ui.component.VolumeSlider
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
+import androidx.datastore.preferences.core.edit
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import com.metrolist.music.ui.component.ActionPromptDialog
+import com.metrolist.music.constants.SleepTimerDefaultKey
+import com.metrolist.music.constants.SleepTimerFadeOutKey
+import com.metrolist.music.constants.SleepTimerStopAfterCurrentSongKey
+import com.metrolist.music.utils.makeTimeString
+import com.metrolist.music.utils.dataStore
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.derivedStateOf
 import com.metrolist.music.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -135,6 +153,37 @@ fun PlayerMenu(
 
     val librarySong by database.song(mediaMetadata.id).collectAsStateWithLifecycle(initialValue = null)
     val coroutineScope = rememberCoroutineScope()
+
+    var showSleepTimerDialog by remember { mutableStateOf(false) }
+    val sleepTimerDefault by rememberPreference(SleepTimerDefaultKey, 30f)
+    var sleepTimerValue by remember { mutableFloatStateOf(sleepTimerDefault) }
+    val isAtDefault by remember {
+        derivedStateOf { sleepTimerValue.roundToInt() == sleepTimerDefault.roundToInt() }
+    }
+    val sleepTimerStopAfterCurrentSong by rememberPreference(SleepTimerStopAfterCurrentSongKey, false)
+    val sleepTimerFadeOut by rememberPreference(SleepTimerFadeOutKey, false)
+    val sleepTimerEnabled = remember(
+        playerConnection.service.sleepTimer.triggerTime,
+        playerConnection.service.sleepTimer.pauseWhenSongEnd
+    ) {
+        playerConnection.service.sleepTimer.isActive
+    }
+    var sleepTimerTimeLeft by remember { mutableLongStateOf(0L) }
+    val isListenTogetherGuest = false
+
+    LaunchedEffect(sleepTimerEnabled) {
+        if (sleepTimerEnabled) {
+            while (isActive) {
+                sleepTimerTimeLeft =
+                    if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
+                        playerConnection.player.duration - playerConnection.player.currentPosition
+                    } else {
+                        playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
+                    }
+                delay(1000L)
+            }
+        }
+    }
 
     val download by LocalDownloadUtil.current
         .getDownload(mediaMetadata.id)
@@ -245,6 +294,48 @@ fun PlayerMenu(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (sleepTimerEnabled) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        )
+                        .clickable(enabled = !isListenTogetherGuest) {
+                            if (sleepTimerEnabled) {
+                                playerConnection.service.sleepTimer.clear()
+                            } else {
+                                showSleepTimerDialog = true
+                            }
+                        }
+                ) {
+                    if (sleepTimerEnabled) {
+                        Text(
+                            text = makeTimeString(sleepTimerTimeLeft),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.bedtime),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
                 VolumeSlider(
                     value = if (isCasting) castVolume else playerVolume.value,
                     onValueChange = { volume ->
@@ -629,6 +720,121 @@ fun PlayerMenu(
                     },
             )
         }
+    }
+
+    if (showSleepTimerDialog) {
+        val sleepTimerDefaultSetTemplate = stringResource(R.string.sleep_timer_default_set)
+        ActionPromptDialog(
+            titleBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.sleep_timer),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                }
+            },
+            onDismiss = { showSleepTimerDialog = false },
+            onConfirm = {
+                showSleepTimerDialog = false
+                playerConnection.service.sleepTimer.start(
+                    minute = sleepTimerValue.roundToInt(),
+                    stopAfterCurrentSong = sleepTimerStopAfterCurrentSong,
+                    fadeOut = sleepTimerFadeOut,
+                )
+            },
+            onCancel = {
+                showSleepTimerDialog = false
+            },
+            onReset = {
+                sleepTimerValue = sleepTimerDefault
+            },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text =
+                            pluralStringResource(
+                                R.plurals.minute,
+                                sleepTimerValue.roundToInt(),
+                                sleepTimerValue.roundToInt(),
+                            ),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Slider(
+                        value = sleepTimerValue,
+                        onValueChange = { sleepTimerValue = it },
+                        valueRange = 5f..120f,
+                        steps = (120 - 5) / 5 - 1,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (isAtDefault) {
+                            Button(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        context.dataStore.edit { settings ->
+                                            settings[SleepTimerDefaultKey] = sleepTimerValue
+                                        }
+                                    }
+                                    Toast.makeText(
+                                        context,
+                                        String.format(sleepTimerDefaultSetTemplate, sleepTimerValue.roundToInt()),
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                },
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
+                            ) {
+                                Text(stringResource(R.string.set_as_default))
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        context.dataStore.edit { settings ->
+                                            settings[SleepTimerDefaultKey] = sleepTimerValue
+                                        }
+                                    }
+                                    Toast.makeText(
+                                        context,
+                                        String.format(sleepTimerDefaultSetTemplate, sleepTimerValue.roundToInt()),
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                },
+                            ) {
+                                Text(stringResource(R.string.set_as_default))
+                            }
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                showSleepTimerDialog = false
+                                playerConnection.service.sleepTimer.start(
+                                    minute = -1,
+                                )
+                            },
+                        ) {
+                            Text(stringResource(R.string.end_of_song))
+                        }
+                    }
+                }
+            },
+        )
     }
 }
 
