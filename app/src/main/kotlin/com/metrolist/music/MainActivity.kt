@@ -1122,9 +1122,7 @@ class MainActivity : ComponentActivity() {
 
                             val onSearchLongClick: () -> Unit =
                                 remember(context) {
-                                    {
-                                        android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
+                                    {}
                                 }
 
                             // Pre-calculate values for graphicsLayer to avoid reading state during composition
@@ -1245,9 +1243,7 @@ class MainActivity : ComponentActivity() {
 
                             val onRailSearchLongClick: () -> Unit =
                                 remember(context) {
-                                    {
-                                        android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
+                                    {}
                                 }
 
                             if (showRail && currentRoute != "wrapped") {

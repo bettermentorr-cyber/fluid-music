@@ -123,59 +123,59 @@ fun ShowMediaInfo(videoId: String) {
                     val baseList = listOf(
                         stringResource(R.string.song_title) to song?.title,
                         stringResource(R.string.song_artists) to song?.artists?.joinToString { it.name },
-                        stringResource(R.string.media_id) to song?.id
+                        stringResource(R.string.views) to info?.viewCount?.let(::numberFormatter).orEmpty(),
+                        stringResource(R.string.likes) to info?.like?.let(::numberFormatter).orEmpty(),
+                        stringResource(R.string.dislikes) to info?.dislike?.let(::numberFormatter).orEmpty(),
+                        stringResource(R.string.mime_type) to currentFormat?.mimeType,
+                        stringResource(R.string.codecs) to currentFormat?.codecs
                     )
 
                     val baseIconsList = listOf(
                         R.drawable.music_note,
                         R.drawable.person,
-                        R.drawable.media3_icon_bookmark_filled,
-                    )
-
-                    val iconsList = listOf(
                         R.drawable.media3_icon_feed,
                         R.drawable.media3_icon_thumb_up_unfilled,
                         R.drawable.media3_icon_thumb_down_unfilled,
-                        R.drawable.key,
-                        R.drawable.play,
                         R.drawable.info,
-                        R.drawable.radio,
-                        R.drawable.gradient,
-                        R.drawable.contrast,
-                        R.drawable.volume_up,
-                        R.drawable.volume_up,
-                        R.drawable.volume_mute,
-                        R.drawable.content_copy
+                        R.drawable.radio
                     )
+
+                    val iconsList = buildList {
+                        add(R.drawable.media3_icon_bookmark_filled)
+                        if (currentFormat != null) {
+                            add(R.drawable.key)
+                            add(R.drawable.play)
+                            add(R.drawable.gradient)
+                            add(R.drawable.contrast)
+                            add(R.drawable.volume_up)
+                            add(R.drawable.volume_up)
+                            add(R.drawable.volume_mute)
+                            add(R.drawable.content_copy)
+                        }
+                    }
 
                     val measuredLufs: Double? = currentFormat?.perceptualLoudnessDb ?: currentFormat?.loudnessDb?.let { it + LoudnessLevel.AGGRESSIVE.targetLufs }
 
-                    val extendedList = if (currentFormat != null) {
-                        listOf(
-                            stringResource(R.string.views) to info?.viewCount?.let(::numberFormatter).orEmpty(),
-                            stringResource(R.string.likes) to info?.like?.let(::numberFormatter).orEmpty(),
-                            stringResource(R.string.dislikes) to info?.dislike?.let(::numberFormatter).orEmpty(),
-                            "Itag" to currentFormat?.itag?.toString(),
-                            stringResource(R.string.stream_client) to currentStreamClient,
-                            stringResource(R.string.mime_type) to currentFormat?.mimeType,
-                            stringResource(R.string.codecs) to currentFormat?.codecs,
-                            stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
-                            stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
-                            stringResource(R.string.loudness) to measuredLufs?.let {
+                    val extendedList = buildList {
+                        add(stringResource(R.string.media_id) to song?.id)
+                        if (currentFormat != null) {
+                            add("Itag" to currentFormat?.itag?.toString())
+                            add(stringResource(R.string.stream_client) to currentStreamClient)
+                            add(stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" })
+                            add(stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" })
+                            add(stringResource(R.string.loudness) to measuredLufs?.let {
                                 String.format(LocalLocale.current.platformLocale, "%.2f dB", it - targetLufs)
-                            },
-                            stringResource(R.string.loudness_level) to getLoudnessLevelLabel(loudnessLevel),
-                            stringResource(R.string.volume) to if (playerConnection != null) "${(playerConnection.player.volume * 100).toInt()}%" else null,
-                            stringResource(R.string.file_size) to
+                            })
+                            add(stringResource(R.string.loudness_level) to getLoudnessLevelLabel(loudnessLevel))
+                            add(stringResource(R.string.volume) to if (playerConnection != null) "${(playerConnection.player.volume * 100).toInt()}%" else null)
+                            add(stringResource(R.string.file_size) to
                                     currentFormat?.contentLength?.let {
                                         Formatter.formatShortFileSize(
                                             context,
                                             it
                                         )
-                                    },
-                        )
-                    } else {
-                        emptyList()
+                                    })
+                        }
                     }
 
                     val cardsBaseList = mutableListOf<Material3SettingsItem>()
