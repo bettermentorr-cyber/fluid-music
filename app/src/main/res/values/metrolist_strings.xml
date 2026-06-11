@@ -132,7 +132,7 @@
     <string name="lyrics_text_size">Lyrics text size</string>
     <string name="lyrics_line_spacing">Lyrics line spacing</string>
     <string name="enable_lrclib_desc">Community-driven synchronized lyrics database</string>
-    <string name="enable_kugou_desc">Pulls lyrics from KuGou, a popular Chinese music platform</string>
+<!--    <string name="enable_kugou_desc">Pulls lyrics from KuGou, a popular Chinese music platform</string> -->
     <string name="youtube_music_lyrics_note">NOTE: YouTube Music lyrics will be shown automatically when no other source is available. They are usually not synchronized</string>
     <string name="enable_better_lyrics">Enable Better Lyrics</string>
     <string name="enable_better_lyrics_desc">Syllable-synced lyrics for any song, perfect for karaoke</string>
@@ -764,8 +764,10 @@
     <string name="cd_system_mode">System mode</string>
     <string name="cd_palette_item">%1$s palette</string>
     <string name="play_all">Play all</string>
+    <!--
     <string name="enable_high_refresh_rate">Enable high refresh rate</string>
     <string name="enable_high_refresh_rate_desc">Forces the display to run at its highest supported refresh rate (e.g. 120Hz)</string>
+    -->
 
     <!-- Music Recognition -->
     <string name="recognize_music">Recognize music</string>

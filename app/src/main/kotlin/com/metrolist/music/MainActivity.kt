@@ -135,7 +135,6 @@ import com.metrolist.music.constants.DarkModeKey
 import com.metrolist.music.constants.DefaultOpenTabKey
 import com.metrolist.music.constants.DisableScreenshotKey
 import com.metrolist.music.constants.DynamicThemeKey
-import com.metrolist.music.constants.EnableHighRefreshRateKey
 import com.metrolist.music.constants.ExperimentalLyricsKey
 import com.metrolist.music.constants.LastSeenVersionKey
 import com.metrolist.music.constants.LyricsProviderOrderKey
@@ -531,35 +530,6 @@ class MainActivity : ComponentActivity() {
         }
 
         val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
-        val enableHighRefreshRate by rememberPreference(EnableHighRefreshRateKey, defaultValue = true)
-
-        LaunchedEffect(enableHighRefreshRate) {
-            val window = this@MainActivity.window
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val layoutParams = window.attributes
-                if (enableHighRefreshRate) {
-                    layoutParams.preferredDisplayModeId = 0
-                } else {
-                    val modes = window.windowManager.defaultDisplay.supportedModes
-                    val mode60 =
-                        modes.firstOrNull { kotlin.math.abs(it.refreshRate - 60f) < 1f }
-                            ?: modes.minByOrNull { kotlin.math.abs(it.refreshRate - 60f) }
-
-                    if (mode60 != null) {
-                        layoutParams.preferredDisplayModeId = mode60.modeId
-                    }
-                }
-                window.attributes = layoutParams
-            } else {
-                val params = window.attributes
-                if (enableHighRefreshRate) {
-                    params.preferredRefreshRate = 0f
-                } else {
-                    params.preferredRefreshRate = 60f
-                }
-                window.attributes = params
-            }
-        }
 
         val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
         val isSystemInDarkTheme = isSystemInDarkTheme()
