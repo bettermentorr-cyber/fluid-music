@@ -1096,9 +1096,9 @@ fun OriginalLyrics(
                                                 val fadeDistance = if (distance < 0f) activeCenter else (layoutInfo.viewportEndOffset - activeCenter)
                                                 val indexDiff = index - displayedCurrentLineIndex
                                                 val maxBlurPx = when (indexDiff) {
-                                                    -1 -> 8.dp.toPx()
-                                                    1 -> 9.dp.toPx()
-                                                    else -> 12.dp.toPx()
+                                                    -1 -> 7.dp.toPx()
+                                                    1 -> 7.dp.toPx()
+                                                    else -> 9.dp.toPx()
                                                 }
                                                 val blurRatio = if (fadeDistance > 0f) (kotlin.math.abs(distance) / fadeDistance).coerceIn(0f, 1f) else 0f
                                                 val blurPx = blurRatio * maxBlurPx

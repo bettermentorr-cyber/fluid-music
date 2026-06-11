@@ -764,9 +764,9 @@ fun ExperimentalLyrics(
                                         } else {
                                             val indexDiff = listIndex - activeListIndex
                                             val maxBlurPx = when (indexDiff) {
-                                                -1 -> 8.dp.toPx()
-                                                1 -> 9.dp.toPx()
-                                                else -> 12.dp.toPx()
+                                                -1 -> 7.dp.toPx()
+                                                1 -> 7.dp.toPx()
+                                                else -> 9.dp.toPx()
                                             }
                                             val distance = animatedOffset + userManualOffset - anchorY
                                             val fadeDistance = if (distance < 0f) anchorY else (maxHeightPx - anchorY)
