@@ -315,13 +315,7 @@ fun SearchScreen(
                 }
             }
 
-            HideOnScrollFAB(
-                lazyListState = lazyListState,
-                icon = R.drawable.mic,
-                onClick = { 
-                    android.widget.Toast.makeText(context, "Audio recognition coming soon!", android.widget.Toast.LENGTH_SHORT).show()
-                },
-            )
+
         }
     }
 

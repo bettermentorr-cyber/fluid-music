@@ -132,7 +132,6 @@ fun PlayerMenu(
     val castVolume by castHandler?.castVolume?.collectAsStateWithLifecycle() ?: remember { mutableFloatStateOf(1f) }
     val castDeviceName by castHandler?.castDeviceName?.collectAsStateWithLifecycle() ?: remember { mutableStateOf<String?>(null) }
 
-    val varispeedMode by rememberPreference(VarispeedKey, defaultValue = false)
 
     val librarySong by database.song(mediaMetadata.id).collectAsStateWithLifecycle(initialValue = null)
     val coroutineScope = rememberCoroutineScope()
@@ -209,26 +208,6 @@ fun PlayerMenu(
         }
     }
 
-    var showPitchTempoDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    if (showPitchTempoDialog) {
-        TempoPitchDialog(
-            onDismiss = { showPitchTempoDialog = false },
-        )
-    }
-
-    var showSpeedDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    if (showSpeedDialog) {
-        SpeedDialog(
-            onDismiss = { showSpeedDialog = false },
-        )
-    }
-
     if (isQueueTrigger != true) {
         Column(
             modifier =
@@ -266,23 +245,6 @@ fun PlayerMenu(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                FilledTonalButton(
-                    onClick = {
-                        navController.navigate("equalizer")
-                        onDismiss()
-                    },
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                    modifier = Modifier.height(40.dp),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.equalizer),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("EQ", style = MaterialTheme.typography.labelMedium)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
                 VolumeSlider(
                     value = if (isCasting) castVolume else playerVolume.value,
                     onValueChange = { volume ->
@@ -635,23 +597,7 @@ fun PlayerMenu(
                         )
 
                         if (isQueueTrigger != true) {
-                            add(
-                                Material3MenuItemData(
-                                    title = { Text(text = stringResource(R.string.equalizer)) },
-                                    description = { Text(text = stringResource(R.string.equalizer_desc)) },
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.equalizer),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(24.dp),
-                                        )
-                                    },
-                                    onClick = {
-                                        navController.navigate("equalizer")
-                                        onDismiss()
-                                    },
-                                ),
-                            )
+
                             add(
                                 Material3MenuItemData(
                                     title = { Text(text = stringResource(R.string.system_equalizer)) },
@@ -679,198 +625,8 @@ fun PlayerMenu(
                                     },
                                 ),
                             )
-                            add(
-                                Material3MenuItemData(
-                                    title = { Text(text = stringResource(R.string.advanced)) },
-                                    description = { Text(text = stringResource(R.string.advanced_desc)) },
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.tune),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(24.dp),
-                                        )
-                                    },
-                                    onClick = {
-                                        if (!varispeedMode) showPitchTempoDialog = true
-                                        else showSpeedDialog = true
-                                    },
-                                ),
-                            )
                         }
                     },
-            )
-        }
-    }
-}
-
-@Composable
-fun TempoPitchDialog(onDismiss: () -> Unit) {
-    val playerConnection = LocalPlayerConnection.current ?: return
-    var tempo by remember {
-        mutableFloatStateOf(playerConnection.player.playbackParameters.speed)
-    }
-    var transposeValue by remember {
-        mutableIntStateOf(round(12 * log2(playerConnection.player.playbackParameters.pitch)).toInt())
-    }
-    val updatePlaybackParameters = {
-        playerConnection.player.playbackParameters =
-            PlaybackParameters(tempo, 2f.pow(transposeValue.toFloat() / 12))
-    }
-    val isInRoom = false
-
-    AlertDialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        onDismissRequest = onDismiss,
-        title = {
-            Text(stringResource(R.string.tempo_and_pitch))
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    tempo = 1f
-                    transposeValue = 0
-                    updatePlaybackParameters()
-                },
-            ) {
-                Text(stringResource(R.string.reset))
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onDismiss,
-            ) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        text = {
-            Column {
-                if (!isInRoom) {
-                    ValueAdjuster(
-                        icon = R.drawable.speed,
-                        currentValue = tempo,
-                        values = (0..35).map { round((0.25f + it * 0.05f) * 100) / 100 },
-                        onValueUpdate = {
-                            tempo = it
-                            updatePlaybackParameters()
-                        },
-                        valueText = { "x$it" },
-                        modifier = Modifier.padding(bottom = 12.dp),
-                    )
-                }
-                ValueAdjuster(
-                    icon = R.drawable.discover_tune,
-                    currentValue = transposeValue,
-                    values = (-12..12).toList(),
-                    onValueUpdate = {
-                        transposeValue = it
-                        updatePlaybackParameters()
-                    },
-                    valueText = { "${if (it > 0) "+" else ""}$it" },
-                )
-            }
-        },
-    )
-}
-
-@Composable
-fun SpeedDialog(onDismiss: () -> Unit) {
-    val playerConnection = LocalPlayerConnection.current ?: return
-    var speed by remember {
-        mutableFloatStateOf(playerConnection.player.playbackParameters.speed)
-    }
-    val updatePlaybackParameters = {
-        playerConnection.player.playbackParameters =
-            PlaybackParameters(speed, speed)
-    }
-
-    AlertDialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        onDismissRequest = onDismiss,
-        title = {
-            Text(stringResource(R.string.speed))
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    speed = 1f
-                    updatePlaybackParameters()
-                },
-            ) {
-                Text(stringResource(R.string.reset))
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onDismiss,
-            ) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        text = {
-            Column {
-                ValueAdjuster(
-                    icon = R.drawable.speed,
-                    currentValue = speed,
-                    values = (0..35).map { round((0.25f + it * 0.05f) * 100) / 100 },
-                    onValueUpdate = {
-                        speed = it
-                        updatePlaybackParameters()
-                    },
-                    valueText = { "x$it" },
-                    modifier = Modifier.padding(bottom = 12.dp),
-                )
-            }
-        },
-    )
-}
-@Composable
-fun <T> ValueAdjuster(
-    @DrawableRes icon: Int,
-    currentValue: T,
-    values: List<T>,
-    onValueUpdate: (T) -> Unit,
-    valueText: (T) -> String,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = null,
-            modifier = Modifier.size(28.dp),
-        )
-
-        IconButton(
-            enabled = currentValue != values.first(),
-            onClick = {
-                onValueUpdate(values[values.indexOf(currentValue) - 1])
-            },
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.remove),
-                contentDescription = null,
-            )
-        }
-
-        Text(
-            text = valueText(currentValue),
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(80.dp),
-        )
-
-        IconButton(
-            enabled = currentValue != values.last(),
-            onClick = {
-                onValueUpdate(values[values.indexOf(currentValue) + 1])
-            },
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.add),
-                contentDescription = null,
             )
         }
     }
