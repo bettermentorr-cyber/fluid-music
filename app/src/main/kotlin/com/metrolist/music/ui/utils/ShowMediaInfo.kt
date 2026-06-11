@@ -11,6 +11,7 @@ import android.content.Context
 import android.text.format.Formatter
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,6 +78,8 @@ fun ShowMediaInfo(videoId: String) {
     var info by remember {
         mutableStateOf<MediaInfo?>(null)
     }
+
+    var isInfoExpanded by remember { mutableStateOf(false) }
 
     val database = LocalDatabase.current
     var song by remember { mutableStateOf<Song?>(null) }
@@ -215,10 +221,32 @@ fun ShowMediaInfo(videoId: String) {
 
                     Spacer(Modifier.height(8.dp))
 
-                    Material3SettingsGroup(
-                        title = stringResource(R.string.information),
-                        items = cardsExtendedList
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { isInfoExpanded = !isInfoExpanded }
+                            .padding(bottom = 8.dp, top = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.information),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Icon(
+                            painter = painterResource(if (isInfoExpanded) R.drawable.expand_less else R.drawable.expand_more),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (isInfoExpanded) {
+                        Material3SettingsGroup(
+                            items = cardsExtendedList
+                        )
+                    }
 
                     Spacer(Modifier.height(8.dp))
 
