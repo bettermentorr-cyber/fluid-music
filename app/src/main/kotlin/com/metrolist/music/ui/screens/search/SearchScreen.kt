@@ -5,6 +5,11 @@
 
 package com.metrolist.music.ui.screens.search
 
+import android.app.Activity
+import android.content.Intent
+import android.speech.RecognizerIntent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.asPaddingValues
@@ -173,6 +178,18 @@ fun SearchScreen(
         }
     }
 
+    val voiceSearchLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!spokenText.isNullOrEmpty()) {
+                query = TextFieldValue(spokenText)
+                handleSearch(spokenText)
+            }
+        }
+    }
+
     val onSearch: (String) -> Unit = { searchQuery -> handleSearch(searchQuery) }
 
     val onSearchFromSuggestion: (String) -> Unit = { searchQuery -> handleSearch(searchQuery) }
@@ -234,6 +251,21 @@ fun SearchScreen(
                                     Icon(
                                         painter = painterResource(R.drawable.close),
                                         contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            } else {
+                                IconButton(
+                                    onClick = {
+                                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                        }
+                                        voiceSearchLauncher.launch(intent)
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.mic),
+                                        contentDescription = "Voice Search",
                                         tint = MaterialTheme.colorScheme.onSurface,
                                     )
                                 }

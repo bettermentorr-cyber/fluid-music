@@ -330,6 +330,8 @@ dependencies {
     implementation(project(":lrclib"))
     "gmsImplementation"(files("libs/discord_partner_sdk.aar"))
     implementation(project(":betterlyrics"))
+    implementation(project(":kugou"))
+    implementation(project(":paxsenix"))
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
