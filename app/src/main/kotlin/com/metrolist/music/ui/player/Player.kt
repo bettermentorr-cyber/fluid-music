@@ -484,7 +484,7 @@ fun BottomSheetPlayer(
                 playerBackground == PlayerBackgroundStyle.GRADIENT -> {
                 when (playerButtonsStyle) {
                     PlayerButtonsStyle.DEFAULT -> {
-                        Pair(Color.White, Color.Black)
+                        Pair(Color.White.copy(alpha = 0.7f), Color.Black)
                     }
 
                     PlayerButtonsStyle.PRIMARY -> {
@@ -507,7 +507,7 @@ fun BottomSheetPlayer(
                 when (playerButtonsStyle) {
                     PlayerButtonsStyle.DEFAULT -> {
                         if (useDarkTheme) {
-                            Pair(Color.White, Color.Black)
+                            Pair(Color.White.copy(alpha = 0.7f), Color.Black)
                         } else {
                             Pair(Color.Black, Color.White)
                         }
@@ -1953,7 +1953,7 @@ fun BottomSheetPlayer(
                                     modifier = Modifier.align(Alignment.Center)
                                 )
                                 
-                                androidx.compose.material3.FilledIconButton(
+                                IconButton(
                                     onClick = {
                                         menuState.show {
                                             com.metrolist.music.ui.menu.PlayerMenu(
@@ -1970,11 +1970,6 @@ fun BottomSheetPlayer(
                                             )
                                         }
                                     },
-                                    shape = RoundedCornerShape(50),
-                                    colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = sideButtonContainerColor,
-                                        contentColor = sideButtonContentColor
-                                    ),
                                     modifier = Modifier
                                         .align(Alignment.CenterEnd)
                                         .padding(end = 27.dp)
@@ -1983,7 +1978,8 @@ fun BottomSheetPlayer(
                                     Icon(
                                         painter = painterResource(R.drawable.more_vert),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp)
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp)
                                     )
                                 }
                             }
