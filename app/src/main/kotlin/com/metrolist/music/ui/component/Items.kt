@@ -152,16 +152,7 @@ fun ClickableArtistText(
     val annotatedString = remember(artists, andString) {
         buildAnnotatedString {
             artists.forEachIndexed { index, artist ->
-                withLink(
-                    LinkAnnotation.Clickable(
-                        tag = artist.id,
-                        styles = TextLinkStyles(SpanStyle(color = linkColor)),
-                    ) {
-                        navController.navigate("artist/${artist.id}")
-                    }
-                ) {
-                    append(artist.name)
-                }
+                append(artist.name)
                 if (index != artists.lastIndex) {
                     if (index == artists.lastIndex - 1) {
                         append(" $andString ")
@@ -196,21 +187,7 @@ fun ClickableArtistText(
     val annotatedString = remember(artists, andString, color) {
         buildAnnotatedString {
             artists.forEachIndexed { index, artist ->
-                val artistId = artist.id
-                if (artistId != null) {
-                    withLink(
-                        LinkAnnotation.Clickable(
-                            tag = artistId,
-                            styles = TextLinkStyles(SpanStyle(color = color)),
-                        ) {
-                            navController.navigate("artist/$artistId")
-                        }
-                    ) {
-                        append(artist.name)
-                    }
-                } else {
-                    append(artist.name)
-                }
+                append(artist.name)
                 if (index != artists.lastIndex) {
                     if (index == artists.lastIndex - 1) {
                         append(" $andString ")
@@ -245,21 +222,7 @@ fun ClickableArtistText(
     val annotatedString = remember(artists, andString) {
         buildAnnotatedString {
             artists.forEachIndexed { index, artist ->
-                val artistId = artist.id
-                if (artistId != null) {
-                    withLink(
-                        LinkAnnotation.Clickable(
-                            tag = artistId,
-                            styles = TextLinkStyles(SpanStyle(color = linkColor)),
-                        ) {
-                            navController.navigate("artist/$artistId")
-                        }
-                    ) {
-                        append(artist.name)
-                    }
-                } else {
-                    append(artist.name)
-                }
+                append(artist.name)
                 if (index != artists.lastIndex) {
                     if (index == artists.lastIndex - 1) {
                         append(" $andString ")

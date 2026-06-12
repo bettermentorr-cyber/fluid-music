@@ -68,6 +68,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
@@ -1125,48 +1126,25 @@ fun BottomSheetPlayer(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 if (useNewPlayerDesign) {
-                    val shareShape =
-                        RoundedCornerShape(
-                            topStart = 50.dp,
-                            bottomStart = 50.dp,
-                            topEnd = 3.dp,
-                            bottomEnd = 3.dp,
-                        )
-
-                    val favShape =
-                        RoundedCornerShape(
-                            topStart = 3.dp,
-                            bottomStart = 3.dp,
-                            topEnd = 50.dp,
-                            bottomEnd = 50.dp,
-                        )
-
-                    val middleShape = RoundedCornerShape(3.dp)
-
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         AnimatedContent(targetState = showInlineLyrics, label = "ShareButton") { showLyrics ->
                             if (showLyrics) {
-                                FilledIconButton(
+                                IconButton(
                                     onClick = { isFullScreen = !isFullScreen },
-                                    shape = shareShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
-                                    modifier = Modifier.size(42.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.fullscreen),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp),
                                     )
                                 }
                             } else {
-                                FilledIconButton(
+                                IconButton(
                                     onClick = {
                                         val intent =
                                             Intent().apply {
@@ -1179,18 +1157,13 @@ fun BottomSheetPlayer(
                                             }
                                         context.startActivity(Intent.createChooser(intent, null))
                                     },
-                                    shape = shareShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
-                                    modifier = Modifier.size(42.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp),
                                     )
                                 }
                             }
@@ -1199,7 +1172,7 @@ fun BottomSheetPlayer(
                         AnimatedContent(targetState = showInlineLyrics, label = "LikeButton") { showLyrics ->
                             if (showLyrics) {
                                 val currentLyrics by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
-                                FilledIconButton(
+                                IconButton(
                                     onClick = {
                                         menuState.show {
                                             com.metrolist.music.ui.menu.LyricsMenu(
@@ -1217,33 +1190,22 @@ fun BottomSheetPlayer(
                                             )
                                         }
                                     },
-                                    shape = favShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
-                                    modifier = Modifier.size(42.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.more_horiz),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp),
                                     )
                                 }
                             } else {
                                 // For episodes, show saved state (inLibrary); for songs, show liked state
                                 val isEpisode = currentSong?.song?.isEpisode == true
                                 val isFavorite = if (isEpisode) currentSong?.song?.inLibrary != null else currentSong?.song?.liked == true
-                                FilledIconButton(
+                                IconButton(
                                     onClick = playerConnection::toggleLike,
-                                    shape = favShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
-                                    modifier = Modifier.size(42.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     Icon(
                                         painter =
@@ -1255,7 +1217,8 @@ fun BottomSheetPlayer(
                                                 },
                                             ),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp),
                                     )
                                 }
                             }
@@ -1264,52 +1227,38 @@ fun BottomSheetPlayer(
                 } else {
                     AnimatedContent(targetState = showInlineLyrics, label = "ShareButton") { showLyrics ->
                         if (showLyrics) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable { isFullScreen = !isFullScreen },
+                            IconButton(
+                                onClick = { isFullScreen = !isFullScreen },
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.fullscreen),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = TextBackgroundColor,
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
                         } else {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable {
-                                            val intent =
-                                                Intent().apply {
-                                                    action = Intent.ACTION_SEND
-                                                    type = "text/plain"
-                                                    putExtra(
-                                                        Intent.EXTRA_TEXT,
-                                                        "https://music.youtube.com/watch?v=${mediaMetadata.id}",
-                                                    )
-                                                }
-                                            context.startActivity(Intent.createChooser(intent, null))
-                                        },
+                            IconButton(
+                                onClick = {
+                                    val intent =
+                                        Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            type = "text/plain"
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "https://music.youtube.com/watch?v=${mediaMetadata.id}",
+                                            )
+                                        }
+                                    context.startActivity(Intent.createChooser(intent, null))
+                                },
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.share),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = TextBackgroundColor,
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
                         }
@@ -1320,46 +1269,38 @@ fun BottomSheetPlayer(
                     AnimatedContent(targetState = showInlineLyrics, label = "LikeButton") { showLyrics ->
                         if (showLyrics) {
                             val currentLyrics by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable {
-                                            menuState.show {
-                                                com.metrolist.music.ui.menu.LyricsMenu(
-                                                    lyricsProvider = { currentLyrics },
-                                                    songProvider = { currentSong?.song },
-                                                    mediaMetadataProvider = { mediaMetadata },
-                                                    onDismiss = menuState::dismiss,
-                                                    onShowOffsetDialog = {
-                                                        bottomSheetPageState.show {
-                                                            ShowOffsetDialog(
-                                                                songProvider = { currentSong?.song },
-                                                            )
-                                                        }
-                                                    },
-                                                )
-                                            }
-                                        },
+                            IconButton(
+                                onClick = {
+                                    menuState.show {
+                                        com.metrolist.music.ui.menu.LyricsMenu(
+                                            lyricsProvider = { currentLyrics },
+                                            songProvider = { currentSong?.song },
+                                            mediaMetadataProvider = { mediaMetadata },
+                                            onDismiss = menuState::dismiss,
+                                            onShowOffsetDialog = {
+                                                bottomSheetPageState.show {
+                                                    ShowOffsetDialog(
+                                                        songProvider = { currentSong?.song },
+                                                    )
+                                                }
+                                            },
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.more_horiz),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = TextBackgroundColor,
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
                         } else {
                             PlayerMoreMenuButton(
                                 mediaMetadata = mediaMetadata,
                                 state = state,
-                                textButtonColor = textButtonColor,
-                                iconButtonColor = iconButtonColor,
+                                textColor = TextBackgroundColor,
                             )
                         }
                     }
@@ -1886,12 +1827,14 @@ fun BottomSheetPlayer(
                                 .zIndex(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            /*
                             // 1. Let the system draw the text first
                             ThumbnailHeader(
                                 queueTitle = queueTitle,
                                 albumTitle = mediaMetadata?.album?.title,
                                 textColor = TextBackgroundColor
                             )
+                            */
                             
                             // 2. Chips align automatically underneath the flattened line
                             Row(
@@ -1987,26 +1930,62 @@ fun BottomSheetPlayer(
                                 .zIndex(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            /*
                             // 1. Let the system draw the text first
                             ThumbnailHeader(
                                 queueTitle = queueTitle,
                                 albumTitle = mediaMetadata?.album?.title,
                                 textColor = TextBackgroundColor
                             )
+                            */
                             
                             // 2. Chips align automatically underneath the flattened line
-                            Row(
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 4.dp, bottom = 8.dp),
-                                horizontalArrangement = Arrangement.Center
+                                    .padding(top = 4.dp, bottom = 8.dp)
                             ) {
                                 SongVideoToggle(
                                     isVideoModeActive = isVideoModeActive,
                                     textButtonColor = textButtonColor,
                                     iconButtonColor = iconButtonColor,
-                                    textBackgroundColor = TextBackgroundColor
+                                    textBackgroundColor = TextBackgroundColor,
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
+                                
+                                androidx.compose.material3.FilledIconButton(
+                                    onClick = {
+                                        menuState.show {
+                                            com.metrolist.music.ui.menu.PlayerMenu(
+                                                mediaMetadata = mediaMetadata,
+                                                playerBottomSheetState = state,
+                                                onShowDetailsDialog = {
+                                                    mediaMetadata?.id?.let {
+                                                        bottomSheetPageState.show {
+                                                            ShowMediaInfo(it)
+                                                        }
+                                                    }
+                                                },
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(50),
+                                    colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = sideButtonContainerColor,
+                                        contentColor = sideButtonContentColor
+                                    ),
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .padding(end = 27.dp)
+                                        .size(42.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.more_vert),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
                         }
 
@@ -2067,6 +2046,7 @@ fun BottomSheetPlayer(
                 TextBackgroundColor = TextBackgroundColor,
                 textButtonColor = textButtonColor,
                 iconButtonColor = iconButtonColor,
+                buttonContainerColor = sideButtonContainerColor,
                 pureBlack = pureBlack,
                 showInlineLyrics = showInlineLyrics,
                 playerBackground = playerBackground,
@@ -2267,41 +2247,36 @@ fun MoreActionsButton(
 private fun PlayerMoreMenuButton(
     mediaMetadata: MediaMetadata,
     state: BottomSheetState,
-    textButtonColor: Color,
-    iconButtonColor: Color,
+    textColor: Color,
 ) {
     val navController = LocalNavController.current
     val menuState = LocalMenuState.current
     val bottomSheetPageState = LocalBottomSheetPageState.current
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(textButtonColor)
-                .clickable {
-                    menuState.show {
-                        PlayerMenu(
-                            mediaMetadata = mediaMetadata,
-                            playerBottomSheetState = state,
-                            onShowDetailsDialog = {
-                                mediaMetadata.id.let {
-                                    bottomSheetPageState.show {
-                                        ShowMediaInfo(it)
-                                    }
-                                }
-                            },
-                            onDismiss = menuState::dismiss,
-                        )
-                    }
-                },
+    IconButton(
+        onClick = {
+            menuState.show {
+                PlayerMenu(
+                    mediaMetadata = mediaMetadata,
+                    playerBottomSheetState = state,
+                    onShowDetailsDialog = {
+                        mediaMetadata.id.let {
+                            bottomSheetPageState.show {
+                                ShowMediaInfo(it)
+                            }
+                        }
+                    },
+                    onDismiss = menuState::dismiss,
+                )
+            }
+        },
+        modifier = Modifier.size(48.dp),
     ) {
-        Image(
-            painter = painterResource(R.drawable.more_horiz),
+        Icon(
+            painter = painterResource(R.drawable.more_vert),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(iconButtonColor),
+            tint = textColor,
+            modifier = Modifier.size(28.dp),
         )
     }
 }
@@ -2323,14 +2298,9 @@ private fun SongVideoToggle(
     Box(
         modifier = modifier
             .width(160.dp)
-            .height(28.dp)
+            .height(32.dp)
             .clip(CircleShape)
             .background(textBackgroundColor.copy(alpha = 0.08f))
-            .border(
-                width = 1.dp,
-                color = textBackgroundColor.copy(alpha = 0.15f),
-                shape = CircleShape
-            )
             .padding(2.dp)
     ) {
         // Sliding indicator pill

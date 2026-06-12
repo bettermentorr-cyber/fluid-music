@@ -155,6 +155,7 @@ fun Queue(
     TextBackgroundColor: Color,
     textButtonColor: Color,
     iconButtonColor: Color,
+    buttonContainerColor: Color = textButtonColor.copy(alpha = 0.2f),
     pureBlack: Boolean,
     showInlineLyrics: Boolean,
     playerBackground: PlayerBackgroundStyle = PlayerBackgroundStyle.DEFAULT,
@@ -305,6 +306,7 @@ fun Queue(
                         iconSize = iconSize,
                         textBackgroundColor = TextBackgroundColor,
                         playerBackground = playerBackground,
+                        buttonContainerColor = buttonContainerColor,
                     )
 
                     val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsStateWithLifecycle()
@@ -322,6 +324,7 @@ fun Queue(
                         iconSize = iconSize,
                         textBackgroundColor = TextBackgroundColor,
                         playerBackground = playerBackground,
+                        buttonContainerColor = buttonContainerColor,
                     )
 
                     PlayerQueueButton(
@@ -335,6 +338,7 @@ fun Queue(
                         iconSize = iconSize,
                         textBackgroundColor = TextBackgroundColor,
                         playerBackground = playerBackground,
+                        buttonContainerColor = buttonContainerColor,
                     )
 
                     PlayerQueueButton(
@@ -349,34 +353,6 @@ fun Queue(
                         },
                         isActive = repeatMode != Player.REPEAT_MODE_OFF,
                         enabled = !isListenTogetherGuest,
-                        shape = middleShape,
-                        modifier = Modifier.size(buttonSize),
-                        textButtonColor = textButtonColor,
-                        iconButtonColor = iconButtonColor,
-                        iconSize = iconSize,
-                        textBackgroundColor = TextBackgroundColor,
-                        playerBackground = playerBackground,
-                    )
-
-                    PlayerQueueButton(
-                        icon = R.drawable.tune,
-                        onClick = {
-                            menuState.show {
-                                PlayerMenu(
-                                    mediaMetadata = mediaMetadata,
-                                    playerBottomSheetState = playerBottomSheetState,
-                                    onShowDetailsDialog = {
-                                        mediaMetadata?.id?.let {
-                                            bottomSheetPageState.show {
-                                                ShowMediaInfo(it)
-                                            }
-                                        }
-                                    },
-                                    onDismiss = menuState::dismiss,
-                                )
-                            }
-                        },
-                        isActive = false,
                         shape = repeatShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
@@ -384,6 +360,7 @@ fun Queue(
                         iconSize = iconSize,
                         textBackgroundColor = TextBackgroundColor,
                         playerBackground = playerBackground,
+                        buttonContainerColor = buttonContainerColor,
                     )
                 }
             } else {
@@ -1253,6 +1230,7 @@ private fun PlayerQueueButton(
     iconSize: androidx.compose.ui.unit.Dp,
     textBackgroundColor: Color,
     playerBackground: PlayerBackgroundStyle,
+    buttonContainerColor: Color = textButtonColor.copy(alpha = 0.2f),
 ) {
     val buttonModifier =
         Modifier
@@ -1267,11 +1245,7 @@ private fun PlayerQueueButton(
         } else {
             modifier
                 .then(
-                    buttonModifier.border(
-                        width = 1.dp,
-                        color = textButtonColor.copy(alpha = 0.3f),
-                        shape = shape,
-                    ),
+                    buttonModifier.background(buttonContainerColor),
                 ).alpha(alphaFactor)
         }
 
