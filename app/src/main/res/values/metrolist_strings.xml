@@ -351,8 +351,8 @@
 
     <!-- Romanization Settings -->
     <string name="lyrics_romanization_cyrillic">Cyrillic</string>
-    <string name="lyrics_romanize_title">Romanization</string>
-    <string name="lyrics_romanization">Lyrics romanization</string>
+    <string name="lyrics_romanize_title">English Script</string>
+    <string name="lyrics_romanization">English Script</string>
     <string name="lyrics_romanize_japanese">Romanize Japanese lyrics</string>
     <string name="lyrics_romanize_korean">Romanize Korean lyrics</string>
     <string name="lyrics_romanize_chinese">Romanize Chinese lyrics</string>
@@ -368,7 +368,7 @@
     <string name="line_by_line_option_desc">Cyrillic script will be detected line-by-line rather than across the entire song</string>
     <string name="line_by_line_dialog_title">Are you sure?</string>
     <string name="line_by_line_dialog_desc">This is a hit-or-miss experimental feature.\n\nBy default, the language is detected from the entire song. With this option on, it will be detected line-by-line instead. This allows multi-language songs to work, BUT the detected language may not always be correct. For example, a Ukrainian line without any Ukrainian-specific characters might be romanized as Russian.\n\nIf you are not experiencing any issues, it is recommended to keep this option off</string>
-    <string name="romanize_current_track">Romanize current track</string>
+    <string name="romanize_current_track">Show in English script</string>
 
     <!-- Lyrics Offset Settings -->
     <string name="lyrics_offset">Lyrics offset</string>
@@ -407,7 +407,7 @@
     <string name="google_cast_description">Cast audio to Chromecast and other Cast-enabled devices</string>
 
     <string name="lyrics_romanize_macedonian">Romanize Macedonian lyrics</string>
-    <string name="lyrics_romanize_as_main">Show romanized lyrics as main</string>
+    <string name="lyrics_romanize_as_main">Show English script as main text</string>
 
     <string name="integrations">Integrations</string>
     <string name="username">Username</string>

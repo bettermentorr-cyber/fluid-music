@@ -155,6 +155,7 @@ import com.metrolist.music.lyrics.LyricsUtils.isJapanese
 import com.metrolist.music.lyrics.LyricsUtils.isKorean
 import com.metrolist.music.lyrics.LyricsUtils.isKyrgyz
 import com.metrolist.music.lyrics.LyricsUtils.isMacedonian
+import com.metrolist.music.lyrics.LyricsUtils.isPunjabi
 import com.metrolist.music.lyrics.LyricsUtils.isRussian
 import com.metrolist.music.lyrics.LyricsUtils.isSerbian
 import com.metrolist.music.lyrics.LyricsUtils.isUkrainian
@@ -164,6 +165,7 @@ import com.metrolist.music.lyrics.LyricsUtils.romanizeCyrillic
 import com.metrolist.music.lyrics.LyricsUtils.romanizeHindi
 import com.metrolist.music.lyrics.LyricsUtils.romanizeJapanese
 import com.metrolist.music.lyrics.LyricsUtils.romanizeKorean
+import com.metrolist.music.lyrics.LyricsUtils.romanizePunjabi
 import com.metrolist.music.lyrics.lyricsTextLooksSynced
 import com.metrolist.music.ui.component.shimmer.ShimmerHost
 import com.metrolist.music.ui.component.shimmer.TextPlaceholder
@@ -258,7 +260,7 @@ fun OriginalLyrics(
             }
         }
 
-    val enabledLanguages = decodedList.filter { (_, checked) -> checked }.map { (lang, _) -> lang }
+    val enabledLanguages = decodedList.filter { (_, checked) -> checked }.map { (lang, _) -> lang }.plus(listOf("Hindi", "Punjabi")).distinct()
 
     val lines =
         remember(lyrics, scope) {
@@ -292,6 +294,10 @@ fun OriginalLyrics(
 
                                 "Hindi" in enabledLanguages && isHindi(text) -> {
                                     value = romanizeHindi(entry.text)
+                                }
+
+                                "Punjabi" in enabledLanguages && isPunjabi(text) -> {
+                                    value = romanizePunjabi(entry.text)
                                 }
 
                                 "Ukrainian" in enabledLanguages && isUkrainian(text) -> {
@@ -343,6 +349,7 @@ fun OriginalLyrics(
                             "Korean" in enabledLanguages && isKorean(text) -> value = romanizeKorean(line)
                             "Chinese" in enabledLanguages && isChinese(text) -> value = romanizeChinese(line)
                             "Hindi" in enabledLanguages && isHindi(text) -> value = romanizeHindi(line)
+                            "Punjabi" in enabledLanguages && isPunjabi(text) -> value = romanizePunjabi(line)
                             "Ukrainian" in enabledLanguages && isUkrainian(text) -> value = romanizeCyrillic(line)
                             "Russian" in enabledLanguages && isRussian(text) -> value = romanizeCyrillic(line)
                             "Serbian" in enabledLanguages && isSerbian(text) -> value = romanizeCyrillic(line)
