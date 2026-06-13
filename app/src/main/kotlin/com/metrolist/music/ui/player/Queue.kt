@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.blur
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -265,12 +268,12 @@ fun Queue(
             if (useNewPlayerDesign) {
                 // New design
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 30.dp, vertical = 12.dp)
+                            .padding(horizontal = 30.dp, vertical = 6.dp)
                             .windowInsetsPadding(
                                 WindowInsets.systemBars.only(
                                     WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
@@ -285,10 +288,11 @@ fun Queue(
 
                     PlayerQueueButton(
                         icon = R.drawable.queue_music,
+                        text = androidx.compose.ui.res.stringResource(R.string.queue),
                         onClick = { state.expandSoft() },
                         isActive = false,
                         shape = queueShape,
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.width(52.dp),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
                         iconSize = iconSize,
@@ -300,13 +304,14 @@ fun Queue(
                     val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsStateWithLifecycle()
                     PlayerQueueButton(
                         icon = R.drawable.shuffle,
+                        text = stringResource(R.string.shuffle),
                         onClick = {
                             playerConnection.player.shuffleModeEnabled = !shuffleModeEnabled
                         },
                         isActive = shuffleModeEnabled,
                         enabled = !isListenTogetherGuest,
                         shape = middleShape,
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.width(52.dp),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
                         iconSize = iconSize,
@@ -316,11 +321,12 @@ fun Queue(
                     )
 
                     PlayerQueueButton(
-                        icon = R.drawable.lyrics,
+                        icon = R.drawable.mic_external_on,
+                        text = stringResource(R.string.lyrics),
                         onClick = { onToggleLyrics() },
                         isActive = showInlineLyrics,
                         shape = middleShape,
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.width(52.dp),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
                         iconSize = iconSize,
@@ -329,27 +335,6 @@ fun Queue(
                         buttonContainerColor = buttonContainerColor,
                     )
 
-                    PlayerQueueButton(
-                        icon =
-                            when (repeatMode) {
-                                Player.REPEAT_MODE_ALL -> R.drawable.repeat
-                                Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                                else -> R.drawable.repeat
-                            },
-                        onClick = {
-                            playerConnection.player.toggleRepeatMode()
-                        },
-                        isActive = repeatMode != Player.REPEAT_MODE_OFF,
-                        enabled = !isListenTogetherGuest,
-                        shape = repeatShape,
-                        modifier = Modifier.size(buttonSize),
-                        textButtonColor = textButtonColor,
-                        iconButtonColor = iconButtonColor,
-                        iconSize = iconSize,
-                        textBackgroundColor = TextBackgroundColor,
-                        playerBackground = playerBackground,
-                        buttonContainerColor = buttonContainerColor,
-                    )
                 }
             } else {
                 // Old design
@@ -1220,61 +1205,53 @@ private fun PlayerQueueButton(
     playerBackground: PlayerBackgroundStyle,
     buttonContainerColor: Color = textButtonColor.copy(alpha = 0.2f),
 ) {
-    val buttonModifier =
-        Modifier
-            .clip(shape)
-            .clickable(enabled = enabled, onClick = onClick)
-
     val alphaFactor = if (enabled) 1f else 0.35f
 
-    val appliedModifier =
-        if (isActive) {
-            modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
-        } else {
-            modifier
-                .then(
-                    buttonModifier.background(buttonContainerColor),
-                ).alpha(alphaFactor)
-        }
-
-    Box(
-        modifier = appliedModifier,
-        contentAlignment = Alignment.Center,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+        modifier = modifier.alpha(alphaFactor)
     ) {
+        val baseTint =
+            if (isActive) {
+                textBackgroundColor
+            } else {
+                textBackgroundColor.copy(alpha = 0.7f)
+            }
+        val finalTint = if (enabled) baseTint else baseTint.copy(alpha = 0.5f)
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(32.dp)
+                .background(
+                    color = if (isActive) buttonContainerColor else Color.Transparent,
+                    shape = androidx.compose.foundation.shape.CircleShape
+                )
+        ) {
+            com.metrolist.music.ui.component.ResizableIconButton(
+                icon = icon,
+                color = finalTint,
+                enabled = enabled,
+                modifier = Modifier
+                    .size(32.dp)
+                    .padding(4.dp),
+                onClick = onClick
+            )
+        }
+        
         if (text != null) {
             Text(
                 text = text,
-                color = iconButtonColor.copy(alpha = if (enabled) 1f else 0.6f),
-                fontSize = 10.sp,
+                color = finalTint,
+                fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .basicMarquee(),
-            )
-        } else {
-            val baseTint =
-                if (isActive) {
-                    iconButtonColor
-                } else {
-                    when (playerBackground) {
-                        PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> {
-                            Color.White
-                        }
-
-                        PlayerBackgroundStyle.DEFAULT -> {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        }
-                    }
-                }
-            val finalTint = if (enabled) baseTint else baseTint.copy(alpha = 0.5f)
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                modifier = Modifier.size(iconSize),
-                tint = finalTint,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-4).dp)
+                    .basicMarquee(),
             )
         }
     }
