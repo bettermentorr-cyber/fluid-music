@@ -37,6 +37,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -1159,20 +1160,25 @@ fun BottomSheetPlayer(
                                     )
                                 }
                             } else {
-                                IconButton(
-                                    onClick = {
-                                        val intent =
-                                            Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                type = "text/plain"
-                                                putExtra(
-                                                    Intent.EXTRA_TEXT,
-                                                    "https://music.youtube.com/watch?v=${mediaMetadata.id}",
-                                                )
-                                            }
-                                        context.startActivity(Intent.createChooser(intent, null))
-                                    },
-                                    modifier = Modifier.size(48.dp),
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clickable(
+                                            indication = ripple(bounded = false, radius = 20.dp),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                        ) {
+                                            val intent =
+                                                Intent().apply {
+                                                    action = Intent.ACTION_SEND
+                                                    type = "text/plain"
+                                                    putExtra(
+                                                        Intent.EXTRA_TEXT,
+                                                        "https://music.youtube.com/watch?v=${mediaMetadata.id}",
+                                                    )
+                                                }
+                                            context.startActivity(Intent.createChooser(intent, null))
+                                        },
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.share),
@@ -1218,9 +1224,15 @@ fun BottomSheetPlayer(
                                 // For episodes, show saved state (inLibrary); for songs, show liked state
                                 val isEpisode = currentSong?.song?.isEpisode == true
                                 val isFavorite = if (isEpisode) currentSong?.song?.inLibrary != null else currentSong?.song?.liked == true
-                                IconButton(
-                                    onClick = playerConnection::toggleLike,
-                                    modifier = Modifier.size(38.dp),
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clickable(
+                                            indication = ripple(bounded = false, radius = 20.dp),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = playerConnection::toggleLike,
+                                        ),
                                 ) {
                                     Icon(
                                         painter =
@@ -1488,6 +1500,7 @@ fun BottomSheetPlayer(
                             ResizableIconButton(
                                 icon = if (sleepTimerEnabled) R.drawable.timer_filled else R.drawable.timer,
                                 color = TextBackgroundColor,
+                                indication = ripple(bounded = false, radius = 20.dp),
                                 modifier = Modifier
                                     .size(32.dp)
                                     .padding(4.dp)
@@ -1644,6 +1657,7 @@ fun BottomSheetPlayer(
                                         else -> throw IllegalStateException()
                                     },
                                 color = TextBackgroundColor,
+                                indication = ripple(bounded = false, radius = 20.dp),
                                 modifier =
                                     Modifier
                                         .size(32.dp)
