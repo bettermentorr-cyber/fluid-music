@@ -977,12 +977,6 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 }
                                             }
-                                            IconButton(onClick = { navController.navigate("stats") }) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.stats),
-                                                    contentDescription = stringResource(R.string.stats),
-                                                )
-                                            }
                                             if (false) {
                                                 IconButton(onClick = { navController.navigate("listen_together_from_topbar") }) {
                                                     Icon(

@@ -642,7 +642,7 @@ private fun NewMiniPlayerPlayPauseButton(
             ),
             contentDescription = null,
             tint = onSurfaceColor,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(28.dp),
         )
     }
 }
@@ -1076,7 +1076,7 @@ private fun AddToPlaylistButton(
             painter = painterResource(R.drawable.control_point_rounded),
             contentDescription = contentDescription,
             tint = onSurfaceColor,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(28.dp),
         )
     }
 }

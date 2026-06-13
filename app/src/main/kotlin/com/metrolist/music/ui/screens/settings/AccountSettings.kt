@@ -300,6 +300,14 @@ fun AccountSettings(
         Material3SettingsGroup(
             items = listOf(
                 Material3SettingsItem(
+                    title = { Text(stringResource(R.string.stats)) },
+                    icon = painterResource(R.drawable.stats),
+                    onClick = {
+                        onClose()
+                        navController.navigate("stats")
+                    }
+                ),
+                Material3SettingsItem(
                     title = {
                         Text(
                             when {
