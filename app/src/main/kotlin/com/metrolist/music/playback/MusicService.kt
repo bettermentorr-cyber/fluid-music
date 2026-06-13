@@ -3986,15 +3986,7 @@ class MusicService :
      * Initialize Google Cast support
      */
     private fun initializeCast() {
-        if (dataStore.get(com.metrolist.music.constants.EnableGoogleCastKey, true)) {
-            try {
-                castConnectionHandler = CastConnectionHandler(this, scope, this)
-                castConnectionHandler?.initialize()
-                timber.log.Timber.d("Google Cast initialized")
-            } catch (e: Exception) {
-                timber.log.Timber.e(e, "Failed to initialize Google Cast")
-            }
-        }
+        // Casting feature disabled globally
     }
 
     override fun onPositionDiscontinuity(

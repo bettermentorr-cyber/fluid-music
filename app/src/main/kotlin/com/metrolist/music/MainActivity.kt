@@ -670,7 +670,7 @@ class MainActivity : ComponentActivity() {
                     navigationItems.mapIndexed { i, s -> s.route to i }.toMap()
                 }
                 val (slimNav) = rememberPreference(SlimNavBarKey, defaultValue = false)
-                val (useNewMiniPlayerDesign) = rememberPreference(UseNewMiniPlayerDesignKey, defaultValue = true)
+                val useNewMiniPlayerDesign = true
                 val (defaultOpenTabInt) = rememberPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME.name)
                 val defaultOpenTab = remember(defaultOpenTabInt) {
                     try {
@@ -692,6 +692,7 @@ class MainActivity : ComponentActivity() {
                     remember {
                         listOf(
                             Screens.Home.route,
+                            Screens.Explore.route,
                             Screens.Library.route,
                             "settings",
                         )

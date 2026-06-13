@@ -168,7 +168,6 @@ import com.metrolist.music.constants.SliderStyle
 import com.metrolist.music.constants.SliderStyleKey
 import com.metrolist.music.constants.SquigglySliderKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
-import com.metrolist.music.constants.UseNewPlayerDesignKey
 import com.metrolist.music.db.entities.LyricsEntity
 import com.metrolist.music.extensions.metadata
 import com.metrolist.music.extensions.togglePlayPause
@@ -229,11 +228,7 @@ fun BottomSheetPlayer(
     val bottomSheetPageState = LocalBottomSheetPageState.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
-    val (useNewPlayerDesign, onUseNewPlayerDesignChange) =
-        rememberPreference(
-            UseNewPlayerDesignKey,
-            defaultValue = true,
-        )
+    val useNewPlayerDesign = true
     val (hidePlayerThumbnail, onHidePlayerThumbnailChange) = rememberPreference(HidePlayerThumbnailKey, false)
     val (hideStatusBarOnFullscreen) = rememberPreference(HideStatusBarOnFullscreenKey, false)
     val cropAlbumArt by rememberPreference(CropAlbumArtKey, false)
@@ -1518,13 +1513,13 @@ fun BottomSheetPlayer(
                                     ),
                                 modifier =
                                     Modifier
-                                        .height(46.dp)
+                                        .height(52.dp)
                                         .weight(0.45f),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.skip_previous),
                                     contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
 
@@ -1556,7 +1551,7 @@ fun BottomSheetPlayer(
                                     ),
                                 modifier =
                                     Modifier
-                                        .height(52.dp)
+                                        .height(60.dp)
                                         .weight(0.75f)
                                         .focusRequester(focusRequester),
                             ) {
@@ -1599,7 +1594,7 @@ fun BottomSheetPlayer(
                                                 } else {
                                                     if (isActiveState) stringResource(R.string.pause) else stringResource(R.string.play)
                                                 },
-                                            modifier = Modifier.size(28.dp),
+                                            modifier = Modifier.size(32.dp),
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
@@ -1630,13 +1625,13 @@ fun BottomSheetPlayer(
                                     ),
                                 modifier =
                                     Modifier
-                                        .height(46.dp)
+                                        .height(52.dp)
                                         .weight(0.45f),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.skip_next),
                                     contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
 
@@ -1965,6 +1960,21 @@ fun BottomSheetPlayer(
                                     .fillMaxWidth()
                                     .padding(top = 4.dp, bottom = 8.dp)
                             ) {
+                                IconButton(
+                                    onClick = { state.collapseSoft() },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .padding(start = 27.dp)
+                                        .size(42.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.expand_more),
+                                        contentDescription = null,
+                                        tint = TextBackgroundColor,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+
                                 SongVideoToggle(
                                     isVideoModeActive = isVideoModeActive,
                                     textButtonColor = textButtonColor,

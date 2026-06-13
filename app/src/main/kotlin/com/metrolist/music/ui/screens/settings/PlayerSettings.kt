@@ -557,30 +557,6 @@ fun PlayerSettings(
                     },
                     onClick = { onAudioTrackPlaybackParamsChange(!audioTrackPlaybackParams) }
                 ))
-                // Only show Cast setting in GMS builds (not in F-Droid/FOSS)
-                if (BuildConfig.CAST_AVAILABLE) {
-                    add(Material3SettingsItem(
-                        icon = painterResource(R.drawable.cast),
-                        title = { Text(stringResource(R.string.google_cast)) },
-                        description = { Text(stringResource(R.string.google_cast_description)) },
-                        trailingContent = {
-                            Switch(
-                                checked = enableGoogleCast,
-                                onCheckedChange = onEnableGoogleCastChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (enableGoogleCast) R.drawable.check else R.drawable.close
-                                        ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
-                            )
-                        },
-                        onClick = { onEnableGoogleCastChange(!enableGoogleCast) }
-                    ))
-                }
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.arrow_forward),
                     title = { Text(stringResource(R.string.seek_seconds_addup)) },

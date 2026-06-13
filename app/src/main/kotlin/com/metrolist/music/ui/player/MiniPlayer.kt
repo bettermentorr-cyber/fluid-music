@@ -45,6 +45,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.Stable
@@ -152,7 +153,7 @@ fun MiniPlayer(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    val useNewMiniPlayerDesign by rememberPreference(UseNewMiniPlayerDesignKey, true)
+    val useNewMiniPlayerDesign = true
 
     // Create stable progress state - doesn't cause recomposition on position changes
     val progressState = remember { ProgressState(positionState, durationState) }
@@ -188,10 +189,17 @@ private fun NewMiniPlayer(
     val menuState = LocalMenuState.current
 
     // Theme settings - these rarely change
-    val miniPlayerBackground by rememberEnumPreference(
+    val miniPlayerBackgroundPref by rememberEnumPreference(
         MiniPlayerBackgroundStyleKey,
         defaultValue = MiniPlayerBackgroundStyle.DEFAULT,
     )
+    val miniPlayerBackground = remember(miniPlayerBackgroundPref) {
+        if (miniPlayerBackgroundPref == MiniPlayerBackgroundStyle.GRADIENT) {
+            MiniPlayerBackgroundStyle.GRADIENT
+        } else {
+            MiniPlayerBackgroundStyle.DEFAULT
+        }
+    }
     val context = LocalContext.current
     var gradientColors by remember { mutableStateOf<List<Color>>(emptyList()) }
     val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -494,15 +502,6 @@ private fun NewMiniPlayer(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Favorite button - isolated composable
-                mediaMetadata?.let { FavoriteButton(
-                    songId = it.id,
-                    primaryColor = primaryColor,
-                    onSurfaceColor = onSurfaceColor,
-                )
-                }
             }
         }
     }
@@ -614,8 +613,10 @@ private fun NewMiniPlayerPlayPauseButton(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(40.dp)
-            .clip(CircleShape)
-            .clickable {
+            .clickable(
+                indication = ripple(bounded = false),
+                interactionSource = remember { MutableInteractionSource() },
+            ) {
                 if (isListenTogetherGuest) {
                     playerConnection.toggleMute()
                     return@clickable
@@ -1065,11 +1066,14 @@ private fun AddToPlaylistButton(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(40.dp)
-            .clip(CircleShape)
-            .clickable { onClick() },
+            .clickable(
+                indication = ripple(bounded = false),
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick
+            ),
     ) {
         Icon(
-            painter = painterResource(R.drawable.add),
+            painter = painterResource(R.drawable.control_point_rounded),
             contentDescription = contentDescription,
             tint = onSurfaceColor,
             modifier = Modifier.size(24.dp),
@@ -1077,32 +1081,4 @@ private fun AddToPlaylistButton(
     }
 }
 
-@Composable
-private fun FavoriteButton(
-    songId: String,
-    primaryColor: Color,
-    onSurfaceColor: Color,
-) {
-    val database = LocalDatabase.current
-    val playerConnection = LocalPlayerConnection.current ?: return
-    val librarySong by database.song(songId).collectAsStateWithLifecycle(initialValue = null)
-    // For episodes, show saved state (inLibrary); for songs, show liked state
-    val isEpisode = librarySong?.song?.isEpisode == true
-    val isLiked = if (isEpisode) librarySong?.song?.inLibrary != null else librarySong?.song?.liked == true
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .clickable { playerConnection.service.toggleLike() },
-    ) {
-        Icon(
-            painter = painterResource(if (isLiked) R.drawable.favorite else R.drawable.favorite_border),
-            contentDescription = null,
-            tint = if (isLiked) primaryColor else onSurfaceColor,
-            modifier = Modifier.size(24.dp),
-        )
-    }
-}
