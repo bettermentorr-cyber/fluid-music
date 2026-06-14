@@ -491,14 +491,8 @@ fun SongListItem(
     showDownloadIcon: Boolean = true,
     subtitleOverride: String? = null,
     badges: @Composable RowScope.() -> Unit = {
-        if (showLikedIcon && song.song.liked) {
-            Icon.Favorite()
-        }
         if (song.song.explicit) {
             Icon.Explicit()
-        }
-        if (showInLibraryIcon && song.song.inLibrary != null) {
-            Icon.Library()
         }
         if (showDownloadIcon) {
             val download by LocalDownloadUtil.current.getDownload(song.id)
@@ -583,12 +577,6 @@ fun SongGridItem(
     showInLibraryIcon: Boolean = false,
     showDownloadIcon: Boolean = true,
     badges: @Composable RowScope.() -> Unit = {
-        if (showLikedIcon && song.song.liked) {
-            Icon.Favorite()
-        }
-        if (showInLibraryIcon && song.song.inLibrary != null) {
-            Icon.Library()
-        }
         if (showDownloadIcon) {
             val download by LocalDownloadUtil.current.getDownload(song.id).collectAsStateWithLifecycle(initialValue = null)
             Icon.Download(download?.state)
@@ -1152,22 +1140,14 @@ fun YouTubeListItem(
     trailingContent: @Composable RowScope.() -> Unit = {},
     badges: @Composable RowScope.() -> Unit = {
         val database = LocalDatabase.current
-        val song by produceState<Song?>(initialValue = null, item.id) {
-            if (item is SongItem) value = database.song(item.id).firstOrNull()
-        }
         val album by produceState<Album?>(initialValue = null, item.id) {
             if (item is AlbumItem) value = database.album(item.id).firstOrNull()
         }
 
-        if ((item is SongItem && song?.song?.liked == true) ||
-            (item is AlbumItem && album?.album?.bookmarkedAt != null)
-        ) {
+        if (item is AlbumItem && album?.album?.bookmarkedAt != null) {
             Icon.Favorite()
         }
         if (item.explicit) Icon.Explicit()
-        // if (item is SongItem && song?.song?.inLibrary != null) {
-        //     Icon.Library()
-        // }
         if (item is SongItem) {
             val download by LocalDownloadUtil.current.getDownload(item.id).collectAsStateWithLifecycle(null)
             Icon.Download(download?.state)
@@ -1257,20 +1237,14 @@ fun YouTubeGridItem(
     coroutineScope: CoroutineScope? = null,
     badges: @Composable RowScope.() -> Unit = {
         val database = LocalDatabase.current
-        val song by produceState<Song?>(initialValue = null, item.id) {
-            if (item is SongItem) value = database.song(item.id).firstOrNull()
-        }
         val album by produceState<Album?>(initialValue = null, item.id) {
             if (item is AlbumItem) value = database.album(item.id).firstOrNull()
         }
 
-        if (item is SongItem && song?.song?.liked == true ||
-            item is AlbumItem && album?.album?.bookmarkedAt != null
-        ) {
+        if (item is AlbumItem && album?.album?.bookmarkedAt != null) {
             Icon.Favorite()
         }
         if (item.explicit) Icon.Explicit()
-        // if (item is SongItem && song?.song?.inLibrary != null) Icon.Library()
         if (item is SongItem) {
             val download by LocalDownloadUtil.current.getDownload(item.id).collectAsStateWithLifecycle(null)
             Icon.Download(download?.state)

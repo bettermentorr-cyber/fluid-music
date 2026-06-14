@@ -974,6 +974,7 @@ class MainActivity : ComponentActivity() {
                                                     Icon(
                                                         painter = painterResource(R.drawable.history),
                                                         contentDescription = stringResource(R.string.history),
+                                                        modifier = Modifier.size(26.dp),
                                                     )
                                                 }
                                             }
@@ -997,14 +998,14 @@ class MainActivity : ComponentActivity() {
                                                             contentDescription = stringResource(R.string.account),
                                                             modifier =
                                                                 Modifier
-                                                                    .size(24.dp)
+                                                                    .size(26.dp)
                                                                     .clip(CircleShape),
                                                         )
                                                     } else {
                                                         Icon(
                                                             painter = painterResource(R.drawable.account),
                                                             contentDescription = stringResource(R.string.account),
-                                                            modifier = Modifier.size(24.dp),
+                                                            modifier = Modifier.size(26.dp),
                                                         )
                                                     }
                                                 }

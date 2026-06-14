@@ -1341,6 +1341,7 @@ fun BottomSheetPlayer(
 
             when (sliderStyle) {
                 SliderStyle.DEFAULT -> {
+                    val defaultColors = PlayerSliderColors.getSliderColors(textButtonColor, playerBackground, useDarkTheme)
                     Slider(
                         value = (sliderPosition ?: effectivePosition).toFloat(),
                         valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
@@ -1364,7 +1365,20 @@ fun BottomSheetPlayer(
                             }
                         },
                         enabled = !isListenTogetherGuest,
-                        colors = PlayerSliderColors.getSliderColors(textButtonColor, playerBackground, useDarkTheme),
+                        colors = defaultColors,
+                        thumb = {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 4.dp, height = 30.dp)
+                                    .background(defaultColors.thumbColor, RoundedCornerShape(50))
+                            )
+                        },
+                        track = { sliderState ->
+                            PlayerSliderTrack(
+                                sliderState = sliderState,
+                                colors = defaultColors,
+                            )
+                        },
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
                     )
                 }
@@ -1492,12 +1506,12 @@ fun BottomSheetPlayer(
                 Column {
                     if (useNewPlayerDesign) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = PlayerHorizontalPadding),
+                                    .padding(horizontal = 24.dp),
                         ) {
                             // Sleep Timer — floating, no bg
                             ResizableIconButton(

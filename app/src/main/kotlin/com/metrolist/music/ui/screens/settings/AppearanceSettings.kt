@@ -135,7 +135,7 @@ fun AppearanceSettings(
             EnableDynamicIconKey,
             defaultValue = true,
         )
-    val (selectedThemeColorInt) =
+    val (selectedThemeColorInt, onSelectedThemeColorChange) =
         rememberPreference(
             SelectedThemeColorKey,
             defaultValue = DefaultThemeColor.toArgb(),
@@ -965,31 +965,40 @@ fun AppearanceSettings(
             title = stringResource(R.string.theme),
             items =
                 buildList {
-                    if (!isUsingCustomColor) {
-                        add(
-                            Material3SettingsItem(
-                                icon = painterResource(R.drawable.palette),
-                                title = { Text(stringResource(R.string.enable_dynamic_theme)) },
-                                trailingContent = {
-                                    Switch(
-                                        checked = dynamicTheme,
-                                        onCheckedChange = onDynamicThemeChange,
-                                        thumbContent = {
-                                            Icon(
-                                                painter =
-                                                    painterResource(
-                                                        id = if (dynamicTheme) R.drawable.check else R.drawable.close,
-                                                    ),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                                            )
-                                        },
-                                    )
-                                },
-                                onClick = { onDynamicThemeChange(!dynamicTheme) },
-                            ),
-                        )
-                    }
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.palette),
+                            title = { Text(stringResource(R.string.enable_dynamic_theme)) },
+                            trailingContent = {
+                                Switch(
+                                    checked = dynamicTheme,
+                                    onCheckedChange = { enabled ->
+                                        onDynamicThemeChange(enabled)
+                                        if (enabled) {
+                                            onSelectedThemeColorChange(DefaultThemeColor.toArgb())
+                                        }
+                                    },
+                                    thumbContent = {
+                                        Icon(
+                                            painter =
+                                                painterResource(
+                                                    id = if (dynamicTheme) R.drawable.check else R.drawable.close,
+                                                ),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    },
+                                )
+                            },
+                            onClick = {
+                                val nextValue = !dynamicTheme
+                                onDynamicThemeChange(nextValue)
+                                if (nextValue) {
+                                    onSelectedThemeColorChange(DefaultThemeColor.toArgb())
+                                }
+                            },
+                        ),
+                    )
                     add(
                         Material3SettingsItem(
                             icon = painterResource(R.drawable.ic_dynamic_icon),

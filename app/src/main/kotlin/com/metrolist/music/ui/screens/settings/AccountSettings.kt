@@ -308,23 +308,6 @@ fun AccountSettings(
                     }
                 ),
                 Material3SettingsItem(
-                    title = {
-                        Text(
-                            when {
-                                !isLoggedIn -> stringResource(R.string.advanced_login)
-                                showToken -> stringResource(R.string.token_shown)
-                                else -> stringResource(R.string.token_hidden)
-                            }
-                        )
-                    },
-                    icon = painterResource(R.drawable.token),
-                    onClick = {
-                        if (!isLoggedIn) showTokenEditor = true
-                        else if (!showToken) showToken = true
-                        else showTokenEditor = true
-                    }
-                ),
-                Material3SettingsItem(
                     title = { Text(stringResource(R.string.more_content)) },
                     icon = painterResource(R.drawable.cached),
                     trailingContent = {

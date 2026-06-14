@@ -987,4 +987,14 @@
     <string name="choose_something_below">Choose something below</string>
     <string name="stream_client">Stream client</string>
     <string name="more_settings">More settings</string>
+
+    <!-- Theme Screen Options -->
+    <string name="theme_mode_adaptive">Adaptive System</string>
+    <string name="theme_mode_adaptive_desc">Automatically adapts to your device\'s theme</string>
+    <string name="theme_mode_light">Light Mode</string>
+    <string name="theme_mode_light_desc">A bright and clean appearance</string>
+    <string name="theme_mode_dark">Dark Mode</string>
+    <string name="theme_mode_dark_desc">Easy on the eyes in low light</string>
+    <string name="theme_mode_oled">OLED Dark</string>
+    <string name="theme_mode_oled_desc">Deep true black for OLED screens</string>
 </resources>
