@@ -268,6 +268,11 @@ fun Queue(
                     modifier =
                         Modifier
                             .fillMaxWidth()
+                            .clickable(
+                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                indication = null,
+                                onClick = {}
+                            )
                             .padding(horizontal = 30.dp, vertical = 6.dp)
                             .windowInsetsPadding(
                                 WindowInsets.systemBars.only(
@@ -1204,8 +1209,12 @@ private fun PlayerQueueButton(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-        modifier = modifier.alpha(alphaFactor)
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .alpha(alphaFactor)
+            .height(52.dp)
+            .clip(androidx.compose.foundation.shape.CircleShape)
+            .clickable(enabled = enabled, onClick = onClick)
     ) {
         val baseTint =
             if (isActive) {
@@ -1224,14 +1233,11 @@ private fun PlayerQueueButton(
                     shape = androidx.compose.foundation.shape.CircleShape
                 )
         ) {
-            com.metrolist.music.ui.component.ResizableIconButton(
-                icon = icon,
-                color = finalTint,
-                enabled = enabled,
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(4.dp),
-                onClick = onClick
+            androidx.compose.material3.Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+                tint = finalTint,
+                modifier = Modifier.size(iconSize)
             )
         }
         

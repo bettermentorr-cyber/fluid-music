@@ -831,45 +831,6 @@ fun ContentSettings(
         Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
-            title = stringResource(R.string.proxy),
-            items = buildList {
-                add(
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.wifi_proxy),
-                        title = { Text(stringResource(R.string.enable_proxy)) },
-                        trailingContent = {
-                            Switch(
-                                checked = proxyEnabled,
-                                onCheckedChange = onProxyEnabledChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (proxyEnabled) R.drawable.check else R.drawable.close
-                                        ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
-                            )
-                        },
-                        onClick = { onProxyEnabledChange(!proxyEnabled) }
-                    )
-                )
-                if (proxyEnabled) {
-                    add(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.settings),
-                            title = { Text(stringResource(R.string.config_proxy)) },
-                            onClick = { showProxyConfigurationDialog = true }
-                        )
-                    )
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(27.dp))
-
-        Material3SettingsGroup(
             title = stringResource(R.string.lyrics),
             items = listOf(
                 Material3SettingsItem(
@@ -944,7 +905,7 @@ fun ContentSettings(
         Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
-            title = stringResource(R.string.misc),
+            title = stringResource(R.string.additional),
             items = listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.shuffle),
@@ -987,6 +948,45 @@ fun ContentSettings(
                     onClick = { showQuickPicksDialog = true }
                 )
             )
+        )
+
+        Spacer(modifier = Modifier.height(27.dp))
+
+        Material3SettingsGroup(
+            title = stringResource(R.string.proxy),
+            items = buildList {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.wifi_proxy),
+                        title = { Text(stringResource(R.string.enable_proxy)) },
+                        trailingContent = {
+                            Switch(
+                                checked = proxyEnabled,
+                                onCheckedChange = onProxyEnabledChange,
+                                thumbContent = {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (proxyEnabled) R.drawable.check else R.drawable.close
+                                        ),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize)
+                                    )
+                                }
+                            )
+                        },
+                        onClick = { onProxyEnabledChange(!proxyEnabled) }
+                    )
+                )
+                if (proxyEnabled) {
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.settings),
+                            title = { Text(stringResource(R.string.config_proxy)) },
+                            onClick = { showProxyConfigurationDialog = true }
+                        )
+                    )
+                }
+            }
         )
         Spacer(modifier = Modifier.height(16.dp))
     }

@@ -116,6 +116,7 @@ fun PlayerSettings(
         PersistentQueueKey,
         defaultValue = true
     )
+    /*
     val (skipSilence, onSkipSilenceChange) = rememberPreference(
         SkipSilenceKey,
         defaultValue = false
@@ -124,6 +125,7 @@ fun PlayerSettings(
         SkipSilenceInstantKey,
         defaultValue = false
     )
+    */
     val (audioNormalization, onAudioNormalizationChange) = rememberPreference(
         AudioNormalizationKey,
         defaultValue = true
@@ -139,6 +141,7 @@ fun PlayerSettings(
         defaultValue = false
     )
 
+    /*
     val (audioTrackPlaybackParams, onAudioTrackPlaybackParamsChange) = rememberPreference(
         key = AudioTrackPlaybackParamsKey,
         defaultValue = true
@@ -148,6 +151,7 @@ fun PlayerSettings(
         key = VarispeedKey,
         defaultValue = false
     )
+    */
 
     val (enableGoogleCast, onEnableGoogleCastChange) = rememberPreference(
         key = EnableGoogleCastKey,
@@ -232,6 +236,10 @@ fun PlayerSettings(
         mutableStateOf(false)
     }
 
+    var isAdvancedExpanded by remember {
+        mutableStateOf(false)
+    }
+
     if (showAudioQualityDialog) {
         EnumDialog(
             onDismiss = { showAudioQualityDialog = false },
@@ -245,8 +253,8 @@ fun PlayerSettings(
             valueText = {
                 when (it) {
                     AudioQuality.AUTO -> stringResource(R.string.audio_quality_auto)
-                    AudioQuality.HIGH -> stringResource(R.string.audio_quality_high)
-                    AudioQuality.LOW -> stringResource(R.string.audio_quality_low)
+                    AudioQuality.HIGH -> stringResource(R.string.metrolist_audio_quality_high)
+                    AudioQuality.LOW -> stringResource(R.string.metrolist_audio_quality_low)
                 }
             }
         )
@@ -316,8 +324,8 @@ fun PlayerSettings(
                         Text(
                             when (audioQuality) {
                                 AudioQuality.AUTO -> stringResource(R.string.audio_quality_auto)
-                                AudioQuality.HIGH -> stringResource(R.string.audio_quality_high)
-                                AudioQuality.LOW -> stringResource(R.string.audio_quality_low)
+                                AudioQuality.HIGH -> stringResource(R.string.metrolist_audio_quality_high)
+                                AudioQuality.LOW -> stringResource(R.string.metrolist_audio_quality_low)
                             }
                         )
                     },
@@ -400,15 +408,26 @@ fun PlayerSettings(
                     title = { Text(stringResource(R.string.history_duration)) },
                     description = {
                         Column {
-                            Text(historyDuration.roundToInt().toString())
+                            Text(
+                                text = stringResource(R.string.history_duration_desc),
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            Text("${historyDuration.roundToInt()}s")
                             Slider(
                                 value = historyDuration,
                                 onValueChange = onHistoryDurationChange,
-                                valueRange = 1f..100f
+                                valueRange = 1f..100f,
+                                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                                track = { sliderState ->
+                                    com.metrolist.music.ui.component.PlayerSliderTrack(
+                                        sliderState = sliderState
+                                    )
+                                }
                             )
                         }
                     }
                 ))
+                /*
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.fast_forward),
                     title = { Text(stringResource(R.string.skip_silence)) },
@@ -452,6 +471,7 @@ fun PlayerSettings(
                     },
                     onClick = { if (skipSilence) onSkipSilenceInstantChange(!skipSilenceInstant) }
                 ))
+                */
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.volume_up),
                     title = { Text(stringResource(R.string.audio_normalization)) },
@@ -509,6 +529,7 @@ fun PlayerSettings(
                     },
                     onClick = { if (!crossfadeEnabled) onAudioOffloadChange(!audioOffload) }
                 ))
+                /*
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.graphic_eq),
                     title = { Text(stringResource(R.string.varispeed)) },
@@ -557,6 +578,7 @@ fun PlayerSettings(
                     },
                     onClick = { onAudioTrackPlaybackParamsChange(!audioTrackPlaybackParams) }
                 ))
+                */
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.arrow_forward),
                     title = { Text(stringResource(R.string.seek_seconds_addup)) },
@@ -645,6 +667,7 @@ fun PlayerSettings(
         Material3SettingsGroup(
             title = stringResource(R.string.sleep_timer),
             items = buildList {
+                /*
                 add(
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.time_auto),
@@ -668,7 +691,9 @@ fun PlayerSettings(
                         onClick = { onSleepTimerEnabledChange(!sleepTimerEnabled) }
                     )
                 )
+                */
 
+                    /*
                     add(
                         Material3SettingsItem(
                             icon = painterResource(R.drawable.baseline_event_repeat_24),
@@ -681,7 +706,7 @@ fun PlayerSettings(
                             trailingContent = {
                                 Switch(
                                     checked = sleepTimerEnabled,
-                                    onCheckedChange = {showSleepTimerDialog = true},
+                                    onCheckedChange = { onSleepTimerEnabledChange(it) },
                                     thumbContent = {
                                         Icon(
                                             painter = painterResource(
@@ -696,8 +721,10 @@ fun PlayerSettings(
                             onClick = { showSleepTimerDialog = true }
                         )
                     )
+                    */
 
 
+                /*
                 add(
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.more_time),
@@ -721,6 +748,7 @@ fun PlayerSettings(
                         onClick = { onSleepTimerStopAfterCurrentSongChange(!sleepTimerStopAfterCurrentSong) }
                     )
                 )
+                */
 
                 add(
                     Material3SettingsItem(
@@ -758,6 +786,32 @@ fun PlayerSettings(
         Material3SettingsGroup(
             title = stringResource(R.string.queue),
             items = listOf(
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.history),
+                    title = { Text("Restore defaults") },
+                    description = { Text("Reset all queue settings to their default values") },
+                    trailingContent = {
+                        TextButton(
+                            onClick = {
+                                onPersistentQueueChange(true)
+                                onAutoLoadMoreChange(true)
+                                onAutoRadioQueueChange(true)
+                                onAutoplayChange(true)
+                                onDisableLoadMoreWhenRepeatAllChange(false)
+                                onAutoDownloadOnLikeChange(false)
+                                similarContentEnabledChange(true)
+                                onAutoSkipNextOnErrorChange(false)
+                                onPersistentShuffleAcrossQueuesChange(false)
+                                onRememberShuffleAndRepeatChange(true)
+                                onShufflePlaylistFirstChange(false)
+                                onPreventDuplicateTracksInQueueChange(false)
+                            }
+                        ) {
+                            Text("Reset")
+                        }
+                    },
+                    onClick = { }
+                ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.queue_music),
                     title = { Text(stringResource(R.string.persistent_queue)) },
@@ -841,7 +895,21 @@ fun PlayerSettings(
                         )
                     },
                     onClick = { onAutoplayChange(!autoplay) }
-                ),
+                )
+            ) + listOf(
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.info),
+                    title = { Text("Advanced settings") },
+                    description = { Text("Change these settings carefully, may cause unwanted errors if done wrong") },
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(if (isAdvancedExpanded) R.drawable.expand_less else R.drawable.expand_more),
+                            contentDescription = null
+                        )
+                    },
+                    onClick = { isAdvancedExpanded = !isAdvancedExpanded }
+                )
+            ) + if (isAdvancedExpanded) listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.repeat),
                     title = { Text(stringResource(R.string.disable_load_more_when_repeat_all)) },
@@ -1010,13 +1078,13 @@ fun PlayerSettings(
                     },
                     onClick = { onAutoSkipNextOnErrorChange(!autoSkipNextOnError) }
                 )
-            )
+            ) else emptyList()
         )
 
         Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
-            title = stringResource(R.string.misc),
+            title = stringResource(R.string.additional),
             items = listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.clear_all),

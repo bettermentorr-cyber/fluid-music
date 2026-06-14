@@ -49,16 +49,7 @@ fun SettingsScreen(
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val isAndroid12OrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val hasAndroidAuto = remember {
-        try {
-            context.packageManager.getPackageInfo(
-                "com.google.android.projection.gearhead", 0
-            )
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
+
 
     Column(
         Modifier
@@ -101,47 +92,12 @@ fun SettingsScreen(
                     icon = painterResource(R.drawable.language),
                     title = { Text(stringResource(R.string.content)) },
                     onClick = { navController.navigate("settings/content") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.translate),
-                    title = { Text(stringResource(R.string.ai_lyrics_translation)) },
-                    onClick = { navController.navigate("settings/ai") }
                 )
             )
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Android Auto Section — only shown if Android Auto is installed
-        if (hasAndroidAuto) {
-            Material3SettingsGroup(
-                title = "Android Auto",
-                items = listOf(
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.ic_android_auto),
-                        title = { Text(stringResource(R.string.android_auto)) },
-                        onClick = { navController.navigate("settings/android_auto") }
-                    )
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
         
-        // Privacy & Security Section
-        Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_privacy),
-            items = listOf(
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.security),
-                    title = { Text(stringResource(R.string.privacy)) },
-                    onClick = { navController.navigate("settings/privacy") }
-                )
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // Storage & Data Section
         Material3SettingsGroup(
             title = stringResource(R.string.settings_section_storage),
@@ -155,6 +111,20 @@ fun SettingsScreen(
                     icon = painterResource(R.drawable.restore),
                     title = { Text(stringResource(R.string.backup_restore)) },
                     onClick = { navController.navigate("settings/backup_restore") }
+                )
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Privacy & Security Section
+        Material3SettingsGroup(
+            title = stringResource(R.string.settings_section_privacy),
+            items = listOf(
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.security),
+                    title = { Text(stringResource(R.string.history_and_privacy)) },
+                    onClick = { navController.navigate("settings/privacy") }
                 )
             )
         )

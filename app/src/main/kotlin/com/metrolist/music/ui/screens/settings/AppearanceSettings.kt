@@ -57,7 +57,6 @@ import androidx.navigation.NavController
 import com.metrolist.music.LocalPlayerAwareWindowInsets
 import com.metrolist.music.R
 import com.metrolist.music.constants.ChipSortTypeKey
-import com.metrolist.music.constants.CropAlbumArtKey
 import com.metrolist.music.constants.DefaultOpenTabKey
 import com.metrolist.music.constants.DensityScale
 import com.metrolist.music.constants.DensityScaleKey
@@ -66,10 +65,8 @@ import com.metrolist.music.constants.EnableDynamicIconKey
 import com.metrolist.music.constants.ExperimentalLyricsKey
 import com.metrolist.music.constants.GridItemSize
 import com.metrolist.music.constants.GridItemsSizeKey
-import com.metrolist.music.constants.HidePlayerThumbnailKey
 import com.metrolist.music.constants.HideStatusBarOnFullscreenKey
 import com.metrolist.music.constants.LibraryFilter
-import com.metrolist.music.constants.ListenTogetherInTopBarKey
 import com.metrolist.music.constants.LyricsAnimationStyle
 import com.metrolist.music.constants.LyricsAnimationStyleKey
 import com.metrolist.music.constants.LyricsClickKey
@@ -96,7 +93,9 @@ import com.metrolist.music.constants.SliderStyle
 import com.metrolist.music.constants.SliderStyleKey
 import com.metrolist.music.constants.SlimNavBarKey
 import com.metrolist.music.constants.SquigglySliderKey
+/*
 import com.metrolist.music.constants.SwipeSensitivityKey
+*/
 import com.metrolist.music.constants.SwipeThumbnailKey
 import com.metrolist.music.constants.SwipeToRemoveSongKey
 import com.metrolist.music.constants.SwipeToSongKey
@@ -172,24 +171,15 @@ fun AppearanceSettings(
             defaultValue = MiniPlayerBackgroundStyle.DEFAULT,
         )
 
-    val availableMiniPlayerBackgroundStyles = listOf(
-        MiniPlayerBackgroundStyle.DEFAULT,
-        MiniPlayerBackgroundStyle.GRADIENT,
-    )
+    val availableMiniPlayerBackgroundStyles = MiniPlayerBackgroundStyle.entries.filter {
+        it != MiniPlayerBackgroundStyle.GRADIENT &&
+        it != MiniPlayerBackgroundStyle.TRANSPARENT &&
+        (it != MiniPlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+    }
 
     var showMiniPlayerBackgroundDialog by rememberSaveable { mutableStateOf(false) }
 
     val useNewMiniPlayerDesign = true
-    val (hidePlayerThumbnail, onHidePlayerThumbnailChange) =
-        rememberPreference(
-            HidePlayerThumbnailKey,
-            defaultValue = false,
-        )
-    val (cropAlbumArt, onCropAlbumArtChange) =
-        rememberPreference(
-            CropAlbumArtKey,
-            defaultValue = false,
-        )
     val (playerBackground, onPlayerBackgroundChange) =
         rememberEnumPreference(
             PlayerBackgroundStyleKey,
@@ -201,11 +191,13 @@ fun AppearanceSettings(
             DefaultOpenTabKey,
             defaultValue = NavigationTab.HOME,
         )
+    /*
     val (playerButtonsStyle, onPlayerButtonsStyleChange) =
         rememberEnumPreference(
             PlayerButtonsStyleKey,
             defaultValue = PlayerButtonsStyle.DEFAULT,
         )
+    */
     val (lyricsPosition, onLyricsPositionChange) =
         rememberEnumPreference(
             LyricsTextPositionKey,
@@ -255,11 +247,13 @@ fun AppearanceSettings(
             SwipeThumbnailKey,
             defaultValue = true,
         )
+    /*
     val (swipeSensitivity, onSwipeSensitivityChange) =
         rememberPreference(
             SwipeSensitivityKey,
             defaultValue = 0.73f,
         )
+    */
     val (gridItemSize, onGridItemSizeChange) =
         rememberEnumPreference(
             GridItemsSizeKey,
@@ -292,11 +286,13 @@ fun AppearanceSettings(
         showRestartDialog = true
     }
 
+    /*
     val (listenTogetherInTopBar, onListenTogetherInTopBarChange) =
         rememberPreference(
             ListenTogetherInTopBarKey,
             defaultValue = true,
         )
+    */
 
     val (swipeToSong, onSwipeToSongChange) =
         rememberPreference(
@@ -355,9 +351,11 @@ fun AppearanceSettings(
         mutableStateOf(false)
     }
 
+    /*
     var showPlayerButtonsStyleDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    */
 
     var showLyricsPositionDialog by rememberSaveable {
         mutableStateOf(false)
@@ -392,7 +390,7 @@ fun AppearanceSettings(
             },
             title = stringResource(R.string.lyrics_animation_style_title),
             current = lyricsAnimationStyle,
-            values = LyricsAnimationStyle.values().toList(),
+            values = listOf(LyricsAnimationStyle.FADE, LyricsAnimationStyle.APPLE),
             valueText = {
                 when (it) {
                     LyricsAnimationStyle.NONE -> stringResource(R.string.lyrics_animation_none)
@@ -532,6 +530,7 @@ fun AppearanceSettings(
         }
     }
 
+    /*
     if (showPlayerButtonsStyleDialog) {
         EnumDialog(
             onDismiss = { showPlayerButtonsStyleDialog = false },
@@ -551,6 +550,7 @@ fun AppearanceSettings(
             },
         )
     }
+    */
 
     if (showPlayerBackgroundDialog) {
         EnumDialog(
@@ -594,6 +594,7 @@ fun AppearanceSettings(
         )
     }
 
+    /*
     var showDefaultOpenTabDialog by rememberSaveable {
         mutableStateOf(false)
     }
@@ -644,6 +645,7 @@ fun AppearanceSettings(
             },
         )
     }
+    */
 
     var showGridSizeDialog by rememberSaveable {
         mutableStateOf(false)
@@ -707,6 +709,7 @@ fun AppearanceSettings(
         }
     }
 
+    /*
     if (showDensityScaleDialog) {
         DefaultDialog(
             onDismiss = { showDensityScaleDialog = false },
@@ -745,6 +748,7 @@ fun AppearanceSettings(
             }
         }
     }
+    */
 
     if (showSliderOptionDialog) {
         DefaultDialog(
@@ -1077,7 +1081,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
+        // var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
 
         Material3SettingsGroup(
             title = stringResource(R.string.player),
@@ -1097,50 +1101,7 @@ fun AppearanceSettings(
                         },
                         onClick = { showPlayerBackgroundDialog = true },
                     ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.hide_image),
-                        title = { Text(stringResource(R.string.hide_player_thumbnail)) },
-                        description = { Text(stringResource(R.string.hide_player_thumbnail_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = hidePlayerThumbnail,
-                                onCheckedChange = onHidePlayerThumbnailChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (hidePlayerThumbnail) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onHidePlayerThumbnailChange(!hidePlayerThumbnail) },
-                    ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.crop),
-                        title = { Text(stringResource(R.string.crop_album_art)) },
-                        description = { Text(stringResource(R.string.crop_album_art_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = cropAlbumArt,
-                                onCheckedChange = onCropAlbumArtChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (cropAlbumArt) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onCropAlbumArtChange(!cropAlbumArt) },
-                    ),
+                    /*
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.palette),
                         title = { Text(stringResource(R.string.player_buttons_style)) },
@@ -1155,6 +1116,7 @@ fun AppearanceSettings(
                         },
                         onClick = { showPlayerButtonsStyleDialog = true },
                     ),
+                    */
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.sliders),
                         title = { Text(stringResource(R.string.player_slider_style)) },
@@ -1204,28 +1166,10 @@ fun AppearanceSettings(
                         },
                         onClick = { onSwipeThumbnailChange(!swipeThumbnail) },
                     ),
-                ) +
-                    if (swipeThumbnail) {
-                        listOf(
-                            Material3SettingsItem(
-                                icon = painterResource(R.drawable.tune),
-                                title = { Text(stringResource(R.string.swipe_sensitivity)) },
-                                description = {
-                                    Text(
-                                        stringResource(
-                                            R.string.sensitivity_percentage,
-                                            (swipeSensitivity * 100).roundToInt(),
-                                        ),
-                                    )
-                                },
-                                onClick = { showSensitivityDialog = true },
-                            ),
-                        )
-                    } else {
-                        emptyList()
-                    },
+                ),
         )
 
+        /*
         if (showSensitivityDialog) {
             var tempSensitivity by remember { mutableFloatStateOf(swipeSensitivity) }
 
@@ -1292,6 +1236,7 @@ fun AppearanceSettings(
                 }
             }
         }
+        */
 
         Spacer(modifier = Modifier.height(27.dp))
 
@@ -1337,6 +1282,7 @@ fun AppearanceSettings(
                         ),
                     )
 
+                    /*
                     if (!experimentalLyrics) {
                         add(
                             Material3SettingsItem(
@@ -1363,6 +1309,7 @@ fun AppearanceSettings(
                             ),
                         )
                     }
+                    */
 
                     add(
                         Material3SettingsItem(
@@ -1540,9 +1487,10 @@ fun AppearanceSettings(
         Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
-            title = stringResource(R.string.misc),
+            title = stringResource(R.string.additional),
             items =
                 listOf(
+                    /*
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.nav_bar),
                         title = { Text(stringResource(R.string.default_open_tab)) },
@@ -1574,6 +1522,7 @@ fun AppearanceSettings(
                         },
                         onClick = { showDefaultChipDialog = true },
                     ),
+                    */
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.swipe),
                         title = { Text(stringResource(R.string.swipe_song_to_add)) },
@@ -1616,6 +1565,7 @@ fun AppearanceSettings(
                         },
                         onClick = { onSwipeToRemoveSongChange(!swipeToRemoveSong) },
                     ),
+                    /*
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.nav_bar),
                         title = { Text(stringResource(R.string.slim_navbar)) },
@@ -1637,6 +1587,8 @@ fun AppearanceSettings(
                         },
                         onClick = { onSlimNavChange(!slimNav) },
                     ),
+                    */
+                    /*
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.group_outlined),
                         title = { Text(stringResource(R.string.listen_together_in_top_bar)) },
@@ -1659,6 +1611,7 @@ fun AppearanceSettings(
                         },
                         onClick = { onListenTogetherInTopBarChange(!listenTogetherInTopBar) },
                     ),
+                    */
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.grid_view),
                         title = { Text(stringResource(R.string.grid_cell_size)) },
@@ -1672,6 +1625,7 @@ fun AppearanceSettings(
                         },
                         onClick = { showGridSizeDialog = true },
                     ),
+                    /*
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.grid_view),
                         title = { Text(stringResource(R.string.display_density)) },
@@ -1680,6 +1634,7 @@ fun AppearanceSettings(
                         },
                         onClick = { showDensityScaleDialog = true },
                     ),
+                    */
                 ),
         )
 

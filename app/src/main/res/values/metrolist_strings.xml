@@ -264,6 +264,7 @@
     <string name="past_year">Past year</string>
     <string name="top_length">My Top list length</string>
     <string name="history_duration">History duration</string>
+    <string name="history_duration_desc">The minimum time (in seconds) a song must play before it\'s added to your listening history.</string>
     <string name="information">Information</string>
     <string name="description">Description</string>
     <string name="views">Views</string>
@@ -378,6 +379,7 @@
     <!-- Material 3 Settings Sections -->
     <string name="settings_section_ui">Interface</string>
     <string name="settings_section_privacy">Privacy &amp; Security</string>
+    <string name="history_and_privacy">History and Privacy</string>
     <string name="settings_section_player_content">Player &amp; Content</string>
     <string name="settings_section_storage">Storage &amp; Data</string>
     <string name="settings_section_system">System &amp; About</string>
@@ -389,10 +391,13 @@
     <string name="update_available_title">Update available</string>
     <string name="update_channel_name">App updates</string>
     <string name="update_channel_desc">Notifications about new app versions</string>
+    <string name="additional">Additional</string>
+    <string name="metrolist_audio_quality_high">HIGH (AAC or Opus)</string>
+    <string name="metrolist_audio_quality_low">Med (Data saver)</string>
 
     <!-- Offload -->
     <string name="audio_offload">Enable audio offload</string>
-    <string name="audio_offload_description">Uses the hardware audio offload path for playback. Disabling this may increase battery usage, but can help if you experience issues with playback or audio post-processing</string>
+    <string name="audio_offload_description">Uses your device\'s hardware for audio decoding.\nPros: Saves battery life during playback.\nCons: May cause stuttering or EQ issues in old androids.</string>
     <string name="audio_offload_disabled_by_crossfade">Disabled because crossfade is active</string>
 
     <!-- Varispeed -->
@@ -453,7 +458,7 @@
     <string name="cache_size_warning_message">The limit you\'ve chosen (%1$s) is smaller than what the app is currently using. Continuing may cause some cached %2$s to be removed. Proceed anyway?</string>
     <string name="cache_size_warning_confirm">Continue</string>
 
-    <string name="lyrics_animation_style_title">Word-by-word animation style</string>
+    <string name="lyrics_animation_style_title">Word-by-word movement effects</string>
     <string name="none">None</string>
     <string name="fade">Fade</string>
     <string name="glow">Glow</string>

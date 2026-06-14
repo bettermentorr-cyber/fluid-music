@@ -35,7 +35,7 @@ import androidx.navigation.NavController
 import com.metrolist.music.LocalDatabase
 import com.metrolist.music.LocalPlayerAwareWindowInsets
 import com.metrolist.music.R
-import com.metrolist.music.constants.DisableScreenshotKey
+
 import com.metrolist.music.constants.PauseListenHistoryKey
 import com.metrolist.music.constants.PauseSearchHistoryKey
 import com.metrolist.music.ui.component.DefaultDialog
@@ -59,10 +59,7 @@ fun PrivacySettings(
         key = PauseSearchHistoryKey,
         defaultValue = false
     )
-    val (disableScreenshot, onDisableScreenshotChange) = rememberPreference(
-        key = DisableScreenshotKey,
-        defaultValue = false
-    )
+
 
     var showClearListenHistoryDialog by remember {
         mutableStateOf(false)
@@ -153,39 +150,6 @@ fun PrivacySettings(
         )
 
         Material3SettingsGroup(
-            title = stringResource(R.string.listen_history),
-            items = listOf(
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.history),
-                    title = { Text(stringResource(R.string.pause_listen_history)) },
-                    trailingContent = {
-                        Switch(
-                            checked = pauseListenHistory,
-                            onCheckedChange = onPauseListenHistoryChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (pauseListenHistory) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(androidx.compose.material3.SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onPauseListenHistoryChange(!pauseListenHistory) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.delete_history),
-                    title = { Text(stringResource(R.string.clear_listen_history)) },
-                    onClick = { showClearListenHistoryDialog = true }
-                )
-            )
-        )
-
-        Spacer(modifier = Modifier.height(27.dp))
-
-        Material3SettingsGroup(
             title = stringResource(R.string.search_history),
             items = listOf(
                 Material3SettingsItem(
@@ -219,20 +183,19 @@ fun PrivacySettings(
         Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
-            title = stringResource(R.string.misc),
+            title = stringResource(R.string.listen_history),
             items = listOf(
                 Material3SettingsItem(
-                    icon = painterResource(R.drawable.screenshot),
-                    title = { Text(stringResource(R.string.disable_screenshot)) },
-                    description = { Text(stringResource(R.string.disable_screenshot_desc)) },
+                    icon = painterResource(R.drawable.history),
+                    title = { Text(stringResource(R.string.pause_listen_history)) },
                     trailingContent = {
                         Switch(
-                            checked = disableScreenshot,
-                            onCheckedChange = onDisableScreenshotChange,
+                            checked = pauseListenHistory,
+                            onCheckedChange = onPauseListenHistoryChange,
                             thumbContent = {
                                 Icon(
                                     painter = painterResource(
-                                        id = if (disableScreenshot) R.drawable.check else R.drawable.close
+                                        id = if (pauseListenHistory) R.drawable.check else R.drawable.close
                                     ),
                                     contentDescription = null,
                                     modifier = Modifier.size(androidx.compose.material3.SwitchDefaults.IconSize)
@@ -240,7 +203,12 @@ fun PrivacySettings(
                             }
                         )
                     },
-                    onClick = { onDisableScreenshotChange(!disableScreenshot) }
+                    onClick = { onPauseListenHistoryChange(!pauseListenHistory) }
+                ),
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.delete_history),
+                    title = { Text(stringResource(R.string.clear_listen_history)) },
+                    onClick = { showClearListenHistoryDialog = true }
                 )
             )
         )
@@ -248,7 +216,7 @@ fun PrivacySettings(
     }
 
     TopAppBar(
-        title = { Text(stringResource(R.string.privacy)) },
+        title = { Text(stringResource(R.string.history_and_privacy)) },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
