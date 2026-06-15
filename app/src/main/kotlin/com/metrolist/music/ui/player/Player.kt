@@ -264,7 +264,7 @@ fun BottomSheetPlayer(
     val shouldUseDarkButtonColors =
         remember(playerBackground, useDarkTheme) {
             when (playerBackground) {
-                PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> true
+                PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.BLUR_GRADIENT -> true
                 PlayerBackgroundStyle.DEFAULT -> useDarkTheme
             }
         }
@@ -279,7 +279,7 @@ fun BottomSheetPlayer(
             val insetsController = WindowCompat.getInsetsController(window, window.decorView)
 
             when (playerBackground) {
-                PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> {
+                PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.BLUR_GRADIENT -> {
                     insetsController.isAppearanceLightStatusBars = false
                 }
 
@@ -415,7 +415,7 @@ fun BottomSheetPlayer(
     val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
 
     LaunchedEffect(mediaMetadata?.id, playerBackground) {
-        if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+        if (playerBackground == PlayerBackgroundStyle.GRADIENT || playerBackground == PlayerBackgroundStyle.BLUR_GRADIENT) {
             val currentMetadata = mediaMetadata
             if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
                 val cachedColors = gradientColorsCache[currentMetadata.id]
@@ -465,8 +465,7 @@ fun BottomSheetPlayer(
         targetValue =
             when (playerBackground) {
                 PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onBackground
-                PlayerBackgroundStyle.BLUR -> Color.White
-                PlayerBackgroundStyle.GRADIENT -> Color.White
+                PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.BLUR_GRADIENT -> Color.White
             },
         label = "TextBackgroundColor",
     )
@@ -475,16 +474,15 @@ fun BottomSheetPlayer(
         targetValue =
             when (playerBackground) {
                 PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.surface
-                PlayerBackgroundStyle.BLUR -> Color.Black
-                PlayerBackgroundStyle.GRADIENT -> Color.Black
+                PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.BLUR_GRADIENT -> Color.Black
             },
         label = "icBackgroundColor",
     )
 
     val (textButtonColor, iconButtonColor) =
         when {
-            playerBackground == PlayerBackgroundStyle.BLUR ||
-                playerBackground == PlayerBackgroundStyle.GRADIENT -> {
+            playerBackground == PlayerBackgroundStyle.GRADIENT ||
+                playerBackground == PlayerBackgroundStyle.BLUR_GRADIENT -> {
                 when (playerButtonsStyle) {
                     PlayerButtonsStyle.DEFAULT -> {
                         Pair(Color.White.copy(alpha = 0.95f), Color.Black)
@@ -536,8 +534,8 @@ fun BottomSheetPlayer(
     // Separate colors for Previous/Next buttons in PRIMARY/TERTIARY modes
     val (sideButtonContainerColor, sideButtonContentColor) =
         when {
-            playerBackground == PlayerBackgroundStyle.BLUR ||
-                playerBackground == PlayerBackgroundStyle.GRADIENT -> {
+            playerBackground == PlayerBackgroundStyle.GRADIENT ||
+                playerBackground == PlayerBackgroundStyle.BLUR_GRADIENT -> {
                 when (playerButtonsStyle) {
                     PlayerButtonsStyle.DEFAULT -> {
                         Pair(
@@ -832,7 +830,7 @@ fun BottomSheetPlayer(
 
     val bottomSheetBackgroundColor =
         when (playerBackground) {
-            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> {
+            PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.BLUR_GRADIENT -> {
                 MaterialTheme.colorScheme.surfaceContainer
             }
 
@@ -858,42 +856,6 @@ fun BottomSheetPlayer(
                         .background(bottomSheetBackgroundColor),
             ) {
                 when (playerBackground) {
-                    PlayerBackgroundStyle.BLUR -> {
-                        AnimatedContent(
-                            targetState = mediaMetadata?.thumbnailUrl,
-                            transitionSpec = {
-                                fadeIn(tween(800)).togetherWith(fadeOut(tween(800)))
-                            },
-                            label = "blurBackground",
-                        ) { thumbnailUrl ->
-                            if (thumbnailUrl != null) {
-                                Box(modifier = Modifier.alpha(backgroundAlpha)) {
-                                    AsyncImage(
-                                        model =
-                                            ImageRequest
-                                                .Builder(context)
-                                                .data(thumbnailUrl)
-                                                .size(100, 100)
-                                                .allowHardware(false)
-                                                .build(),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier =
-                                            Modifier
-                                                .fillMaxSize()
-                                                .blur(if (useDarkTheme) 150.dp else 100.dp),
-                                    )
-                                    Box(
-                                        modifier =
-                                            Modifier
-                                                .fillMaxSize()
-                                                .background(Color.Black.copy(alpha = 0.3f)),
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     PlayerBackgroundStyle.GRADIENT -> {
                         AnimatedContent(
                             targetState = gradientColors,
@@ -925,6 +887,56 @@ fun BottomSheetPlayer(
                                         .background(Color.Black.copy(alpha = 0.2f)),
                                 )
                             }
+                        }
+                    }
+
+                    PlayerBackgroundStyle.BLUR_GRADIENT -> {
+                        val colors = gradientColors
+                        val baseColor = if (colors.isNotEmpty()) colors[0] else MaterialTheme.colorScheme.surface
+                        val accentColor = if (colors.size >= 2) colors[1] else if (colors.isNotEmpty()) colors[0] else MaterialTheme.colorScheme.surfaceVariant
+
+                        Box(modifier = Modifier.fillMaxSize().alpha(backgroundAlpha)) {
+                            AnimatedContent(
+                                targetState = mediaMetadata?.thumbnailUrl,
+                                transitionSpec = {
+                                    fadeIn(tween(800)).togetherWith(fadeOut(tween(800)))
+                                },
+                                label = "blurGradientBackgroundArt",
+                            ) { thumbnailUrl ->
+                                if (thumbnailUrl != null) {
+                                    AsyncImage(
+                                        model =
+                                            ImageRequest
+                                                .Builder(context)
+                                                .data(thumbnailUrl)
+                                                .size(100, 100)
+                                                .allowHardware(false)
+                                                .build(),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier =
+                                            Modifier
+                                                .fillMaxSize()
+                                                .blur(150.dp),
+                                        alpha = 0.55f
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colorStops = arrayOf(
+                                                0.00f to Color.Black.copy(alpha = 0.40f),
+                                                0.30f to accentColor.copy(alpha = 0.22f),
+                                                0.55f to baseColor.copy(alpha = 0.34f),
+                                                0.80f to Color.Black.copy(alpha = 0.80f),
+                                                1.00f to Color.Black.copy(alpha = 0.95f)
+                                            )
+                                        )
+                                    )
+                            )
                         }
                     }
 
@@ -1187,7 +1199,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
                                         tint = TextBackgroundColor,
-                                        modifier = Modifier.size(28.dp),
+                                        modifier = Modifier.size(24.dp),
                                     )
                                 }
                             }
@@ -1341,7 +1353,6 @@ fun BottomSheetPlayer(
 
             when (sliderStyle) {
                 SliderStyle.DEFAULT -> {
-                    val defaultColors = PlayerSliderColors.getSliderColors(textButtonColor, playerBackground, useDarkTheme)
                     Slider(
                         value = (sliderPosition ?: effectivePosition).toFloat(),
                         valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
@@ -1365,21 +1376,15 @@ fun BottomSheetPlayer(
                             }
                         },
                         enabled = !isListenTogetherGuest,
-                        colors = defaultColors,
-                        thumb = {
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 4.dp, height = 30.dp)
-                                    .background(defaultColors.thumbColor, RoundedCornerShape(50))
-                            )
-                        },
-                        track = { sliderState ->
-                            PlayerSliderTrack(
-                                sliderState = sliderState,
-                                colors = defaultColors,
-                            )
-                        },
+                        colors = PlayerSliderColors.getSliderColors(textButtonColor, playerBackground, useDarkTheme),
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
+                        track = { sliderState ->
+                            androidx.compose.material3.SliderDefaults.Track(
+                                colors = PlayerSliderColors.getSliderColors(textButtonColor, playerBackground, useDarkTheme),
+                                sliderState = sliderState,
+                                modifier = Modifier.height(12.dp)
+                            )
+                        }
                     )
                 }
 

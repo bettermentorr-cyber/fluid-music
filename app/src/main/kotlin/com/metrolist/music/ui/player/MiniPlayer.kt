@@ -129,6 +129,10 @@ import kotlinx.coroutines.withContext
 import com.metrolist.music.ui.theme.PlayerColorExtractor
 import com.metrolist.music.ui.component.LocalMenuState
 import com.metrolist.music.ui.menu.AddToPlaylistDialog
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import com.metrolist.music.extensions.metadata
+
 
 /**
  * Stable wrapper for progress state - reads values only during draw phase
@@ -240,21 +244,6 @@ private fun NewMiniPlayer(
             (windowInfo.containerSize.width / density.density) >= 600f && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         }
 
-    // Swipe animation state
-    val offsetXAnimatable = remember { Animatable(0f) }
-    var dragStartTime by remember { mutableLongStateOf(0L) }
-    var totalDragDistance by remember { mutableFloatStateOf(0f) }
-
-    val animationSpec =
-        remember {
-            spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
-        }
-
-    val autoSwipeThreshold =
-        remember(swipeSensitivity) {
-            (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
-        }
-
     LaunchedEffect(mediaMetadata?.id, miniPlayerBackground) {
         gradientColors = emptyList()
         if (miniPlayerBackground == MiniPlayerBackgroundStyle.GRADIENT) {
@@ -318,68 +307,6 @@ private fun NewMiniPlayer(
                 .height(MiniPlayerHeight)
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                 .padding(horizontal = 12.dp)
-                .let { baseModifier ->
-                    if (swipeThumbnail) {
-                        baseModifier.pointerInput(Unit) {
-                            detectHorizontalDragGestures(
-                                onDragStart = {
-                                    dragStartTime = System.currentTimeMillis()
-                                    totalDragDistance = 0f
-                                },
-                                onDragCancel = {
-                                    coroutineScope.launch {
-                                        offsetXAnimatable.animateTo(0f, animationSpec)
-                                    }
-                                },
-                                onHorizontalDrag = { _, dragAmount ->
-                                    val adjustedDragAmount =
-                                        if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                                    val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                    val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-                                    val tryingToSwipeRight = adjustedDragAmount > 0
-                                    val tryingToSwipeLeft = adjustedDragAmount < 0
-                                    val allowLeft = tryingToSwipeLeft && canSkipNext
-                                    val allowRight = tryingToSwipeRight && canSkipPrevious
-
-                                    val canReturnToCenter =
-                                        (tryingToSwipeRight && !canSkipPrevious && offsetXAnimatable.value < 0) ||
-                                            (tryingToSwipeLeft && !canSkipNext && offsetXAnimatable.value > 0)
-
-                                    if (allowLeft || allowRight || canReturnToCenter) {
-                                        totalDragDistance += kotlin.math.abs(adjustedDragAmount)
-                                        coroutineScope.launch {
-                                            offsetXAnimatable.snapTo(offsetXAnimatable.value + adjustedDragAmount)
-                                        }
-                                    }
-                                },
-                                onDragEnd = {
-                                    val dragDuration = System.currentTimeMillis() - dragStartTime
-                                    val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
-                                    val currentOffset = offsetXAnimatable.value
-                                    val minDistanceThreshold = 50f
-                                    val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
-
-                                    val shouldChangeSong =
-                                        (kotlin.math.abs(currentOffset) > minDistanceThreshold && velocity > velocityThreshold) ||
-                                            (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
-
-                                    if (shouldChangeSong) {
-                                        if (currentOffset > 0 && canSkipPrevious) {
-                                            playerConnection.player.seekToPreviousMediaItem()
-                                        } else if (currentOffset <= 0 && canSkipNext) {
-                                            playerConnection.player.seekToNext()
-                                        }
-                                    }
-                                    coroutineScope.launch {
-                                        offsetXAnimatable.animateTo(0f, animationSpec)
-                                    }
-                                },
-                            )
-                        }
-                    } else {
-                        baseModifier
-                    }
-                },
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         Box(
@@ -387,7 +314,6 @@ private fun NewMiniPlayer(
                 Modifier
                     .then(if (isTabletLandscape) Modifier.width(500.dp).align(Alignment.Center) else Modifier.fillMaxWidth())
                     .height(64.dp)
-                    .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
                     .clip(RoundedCornerShape(20.dp))
                     .background(color = backgroundColor)
                     .clickable(
@@ -437,23 +363,93 @@ private fun NewMiniPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
-                // Artwork with progress - isolated composable
-                NewMiniPlayerArtworkWithProgress(
-                    progressState = progressState,
-                    mediaMetadata = mediaMetadata,
-                    primaryColor = primaryColor,
-                    outlineColor = outlineColor,
-                )
+                // Swipe effect is temporarily disabled for review/fixing later
+                /*
+                if (swipeThumbnail) {
+                    val queueWindows by playerConnection.queueWindows.collectAsStateWithLifecycle()
+                    val currentWindowIndex by playerConnection.currentWindowIndex.collectAsStateWithLifecycle()
+                    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
+                    
+                    var page0Meta by remember { mutableStateOf<com.metrolist.music.models.MediaMetadata?>(null) }
+                    var page1Meta by remember { mutableStateOf<com.metrolist.music.models.MediaMetadata?>(null) }
+                    var page2Meta by remember { mutableStateOf<com.metrolist.music.models.MediaMetadata?>(null) }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                    LaunchedEffect(mediaMetadata, queueWindows, currentWindowIndex) {
+                        if (pagerState.currentPage == 1 && !pagerState.isScrollInProgress) {
+                            page0Meta = queueWindows.getOrNull(currentWindowIndex - 1)?.mediaItem?.metadata
+                            page1Meta = mediaMetadata
+                            page2Meta = queueWindows.getOrNull(currentWindowIndex + 1)?.mediaItem?.metadata
+                        }
+                    }
 
-                // Song info - isolated composable
-                NewMiniPlayerSongInfo(
-                    mediaMetadata = mediaMetadata,
-                    onSurfaceColor = onSurfaceColor,
-                    errorColor = errorColor,
-                    modifier = Modifier.weight(1f),
-                )
+                    LaunchedEffect(pagerState.currentPage) {
+                        if (pagerState.currentPage == 0) {
+                            if (canSkipPrevious) {
+                                playerConnection.player.seekToPreviousMediaItem()
+                                page2Meta = page1Meta
+                                page1Meta = page0Meta
+                                page0Meta = queueWindows.getOrNull(currentWindowIndex - 2)?.mediaItem?.metadata
+                            }
+                            pagerState.scrollToPage(1)
+                        } else if (pagerState.currentPage == 2) {
+                            if (canSkipNext) {
+                                playerConnection.player.seekToNext()
+                                page0Meta = page1Meta
+                                page1Meta = page2Meta
+                                page2Meta = queueWindows.getOrNull(currentWindowIndex + 2)?.mediaItem?.metadata
+                            }
+                            pagerState.scrollToPage(1)
+                        }
+                    }
+
+                    val dummyProgressState = remember { ProgressState(mutableLongStateOf(0L), mutableLongStateOf(1L)) }
+
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) { page ->
+                        val pageMetadata = when(page) {
+                            0 -> page0Meta
+                            1 -> page1Meta
+                            2 -> page2Meta
+                            else -> null
+                        }
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            NewMiniPlayerArtworkWithProgress(
+                                progressState = if (page == 1) progressState else dummyProgressState,
+                                mediaMetadata = pageMetadata,
+                                primaryColor = primaryColor,
+                                outlineColor = outlineColor,
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            NewMiniPlayerSongInfo(
+                                mediaMetadata = pageMetadata,
+                                onSurfaceColor = onSurfaceColor,
+                                errorColor = errorColor,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                } else {
+                */
+
+                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    NewMiniPlayerArtworkWithProgress(
+                        progressState = progressState,
+                        mediaMetadata = mediaMetadata,
+                        primaryColor = primaryColor,
+                        outlineColor = outlineColor,
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    NewMiniPlayerSongInfo(
+                        mediaMetadata = mediaMetadata,
+                        onSurfaceColor = onSurfaceColor,
+                        errorColor = errorColor,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(12.dp))
 

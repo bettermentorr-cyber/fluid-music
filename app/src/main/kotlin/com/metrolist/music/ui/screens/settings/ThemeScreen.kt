@@ -111,48 +111,48 @@ fun ThemeScreen(navController: NavController) {
                         onClick = { onDarkModeChange(DarkMode.AUTO) }
                     ),
                     Material3SettingsItem(
-                        leadingContent = {
-                            ModeCircle(
-                                darkMode = darkMode,
-                                pureBlack = pureBlack,
-                                targetMode = DarkMode.OFF,
-                                targetPureBlack = false,
-                                showIcon = false,
-                                onClick = null
-                            )
-                        },
                         title = { Text(stringResource(R.string.theme_mode_light)) },
                         description = { Text(stringResource(R.string.theme_mode_light_desc)) },
+                        trailingContent = {
+                            if (darkMode == DarkMode.OFF) {
+                                Icon(
+                                    painter = painterResource(R.drawable.check),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        },
                         onClick = { onDarkModeChange(DarkMode.OFF); onPureBlackChange(false) }
                     ),
                     Material3SettingsItem(
-                        leadingContent = {
-                            ModeCircle(
-                                darkMode = darkMode,
-                                pureBlack = pureBlack,
-                                targetMode = DarkMode.ON,
-                                targetPureBlack = false,
-                                showIcon = false,
-                                onClick = null
-                            )
-                        },
                         title = { Text(stringResource(R.string.theme_mode_dark)) },
                         description = { Text(stringResource(R.string.theme_mode_dark_desc)) },
+                        trailingContent = {
+                            if (darkMode == DarkMode.ON && !pureBlack) {
+                                Icon(
+                                    painter = painterResource(R.drawable.check),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        },
                         onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(false) }
                     ),
                     Material3SettingsItem(
-                        leadingContent = {
-                            ModeCircle(
-                                darkMode = darkMode,
-                                pureBlack = pureBlack,
-                                targetMode = DarkMode.ON,
-                                targetPureBlack = true,
-                                showIcon = false,
-                                onClick = null
-                            )
-                        },
                         title = { Text(stringResource(R.string.theme_mode_oled)) },
                         description = { Text(stringResource(R.string.theme_mode_oled_desc)) },
+                        trailingContent = {
+                            if (darkMode == DarkMode.ON && pureBlack) {
+                                Icon(
+                                    painter = painterResource(R.drawable.check),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        },
                         onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(true) }
                     )
                 )

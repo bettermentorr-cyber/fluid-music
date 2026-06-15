@@ -64,13 +64,6 @@ val SeekExtraSeconds = booleanPreferencesKey("seekExtraSeconds")
 val PauseOnMute = booleanPreferencesKey("pauseOnMute")
 val ResumeOnBluetoothConnectKey = booleanPreferencesKey("resumeOnBluetoothConnect")
 val KeepScreenOn = booleanPreferencesKey("keepScreenOn")
-val AlarmEnabledKey = booleanPreferencesKey("alarmEnabled")
-val AlarmHourKey = intPreferencesKey("alarmHour")
-val AlarmMinuteKey = intPreferencesKey("alarmMinute")
-val AlarmPlaylistIdKey = stringPreferencesKey("alarmPlaylistId")
-val AlarmRandomSongKey = booleanPreferencesKey("alarmRandomSong")
-val AlarmNextTriggerAtKey = longPreferencesKey("alarmNextTriggerAt")
-val AlarmEntriesKey = stringPreferencesKey("alarmEntries")
 val DeveloperModeKey = booleanPreferencesKey("developerMode")
 
 enum class SliderStyle {
@@ -421,7 +414,7 @@ enum class PlayerButtonsStyle {
 enum class PlayerBackgroundStyle {
     DEFAULT,
     GRADIENT,
-    BLUR,
+    BLUR_GRADIENT,
 }
 
 val TopSize = stringPreferencesKey("topSize")

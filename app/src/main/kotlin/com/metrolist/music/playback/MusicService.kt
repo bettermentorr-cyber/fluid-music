@@ -156,8 +156,6 @@ import com.metrolist.music.lyrics.LyricsHelper
 import com.metrolist.music.models.PersistPlayerState
 import com.metrolist.music.models.PersistQueue
 import com.metrolist.music.models.toMediaMetadata
-import com.metrolist.music.playback.alarm.MusicAlarmScheduler
-import com.metrolist.music.playback.alarm.MusicAlarmStore
 import com.metrolist.music.playback.audio.SilenceDetectorAudioProcessor
 import com.metrolist.music.playback.queues.EmptyQueue
 import com.metrolist.music.playback.queues.ListQueue
@@ -841,7 +839,7 @@ class MusicService :
         combine(
             currentFormat,
             dataStore.data
-                .map { it[AudioNormalizationKey] ?: true }
+                .map { false }
                 .distinctUntilChanged(),
             dataStore.data
                 .map { prefs -> prefs[LoudnessLevelKey].toEnum(LoudnessLevel.BALANCED) }
@@ -1437,14 +1435,14 @@ class MusicService :
             val relatedPage = YouTube.related(relatedEndpoint).getOrNull() ?: return
             database.query {
                 relatedPage.songs
-                    .map(SongItem::toMediaMetadata)
-                    .onEach(::insert)
+                    .map { it.toMediaMetadata() }
+                    .onEach { insert(it) }
                     .map {
                         RelatedSongMap(
                             songId = mediaId,
                             relatedSongId = it.id,
                         )
-                    }.forEach(::insert)
+                    }.forEach { insert(it) }
             }
         }
     }
@@ -1966,7 +1964,7 @@ class MusicService :
 
     private fun seedLoudnessCacheFromPrefs() {
         val prefs = startupPrefs!!
-        normalizationEnabledCached = prefs[AudioNormalizationKey] ?: true
+        normalizationEnabledCached = false
         loudnessLevelCached = prefs[LoudnessLevelKey].toEnum(LoudnessLevel.BALANCED)
 
         Timber.tag(TAG).d(
@@ -3643,15 +3641,12 @@ class MusicService :
     ): Int {
         val requiresForegroundPromotion =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                (intent?.action == null || intent.action == ACTION_ALARM_TRIGGER)
+                intent?.action == null
         if (requiresForegroundPromotion && !ensureForegroundWithLatestNotificationOrStop()) {
             return START_NOT_STICKY
         }
 
         when (intent?.action) {
-            ACTION_ALARM_TRIGGER -> {
-                handleAlarmTrigger(intent)
-            }
 
             MusicWidgetReceiver.ACTION_PLAY_PAUSE -> {
                 if (player.isPlaying) player.pause() else player.play()
@@ -3789,96 +3784,6 @@ class MusicService :
             }
 
             else -> null
-        }
-    }
-
-    private fun handleAlarmTrigger(intent: Intent) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                MusicAlarmScheduler.scheduleFromPreferences(this@MusicService)
-            } catch (t: Throwable) {
-                Timber.tag(TAG).e(t, "Failed to reschedule alarms after trigger")
-            }
-        }
-        val playlistId = intent.getStringExtra(EXTRA_ALARM_PLAYLIST_ID).orEmpty()
-        val alarmId = intent.getStringExtra(EXTRA_ALARM_ID).orEmpty()
-        if (playlistId.isBlank()) {
-            if (alarmId.isNotBlank()) {
-                scope.launch(Dispatchers.IO) {
-                    try {
-                        val alarms = MusicAlarmStore.load(this@MusicService)
-                        val updated =
-                            alarms.map { alarm ->
-                                if (alarm.id == alarmId) alarm.copy(enabled = false, nextTriggerAt = -1L) else alarm
-                            }
-                        MusicAlarmScheduler.scheduleAll(this@MusicService, updated)
-                    } catch (t: Throwable) {
-                        Timber.tag(TAG).e(t, "Failed to disable alarm with invalid playlist")
-                    }
-                }
-            }
-            return
-        }
-        val randomSong = intent.getBooleanExtra(EXTRA_ALARM_RANDOM_SONG, false)
-        scope.launch {
-            try {
-                val playlistSongs =
-                    withContext(Dispatchers.IO) {
-                        database.playlistSongs(playlistId).first()
-                    }
-                if (playlistSongs.isEmpty()) {
-                    if (alarmId.isNotBlank()) {
-                        withContext(Dispatchers.IO) {
-                            val alarms = MusicAlarmStore.load(this@MusicService)
-                            val updated =
-                                alarms.map { alarm ->
-                                    if (alarm.id == alarmId) alarm.copy(enabled = false, nextTriggerAt = -1L) else alarm
-                                }
-                            MusicAlarmScheduler.scheduleAll(this@MusicService, updated)
-                        }
-                    }
-                    return@launch
-                }
-                val items = playlistSongs.map { it.song.toMediaItem() }
-                val playlistName =
-                    withContext(Dispatchers.IO) {
-                        database
-                            .playlist(playlistId)
-                            .first()
-                            ?.playlist
-                            ?.name
-                    }
-                withContext(Dispatchers.IO) {
-                    MusicAlarmScheduler.scheduleFromPreferences(this@MusicService)
-                }
-
-                val alarmItems =
-                    if (randomSong) {
-                        val firstIndex = Random.nextInt(items.size)
-                        buildList(items.size) {
-                            add(items[firstIndex])
-                            items.forEachIndexed { index, item ->
-                                if (index != firstIndex) add(item)
-                            }
-                        }
-                    } else {
-                        items
-                    }
-
-                player.stop()
-                player.clearMediaItems()
-                playQueue(
-                    ListQueue(
-                        title = playlistName,
-                        items = alarmItems,
-                        startIndex = 0,
-                        position = 0L,
-                    ),
-                    playWhenReady = true,
-                )
-            } catch (t: Throwable) {
-                Timber.tag(TAG).e(t, "Failed to start alarm playback")
-            }
         }
     }
 
@@ -4215,11 +4120,6 @@ class MusicService :
     }
 
     companion object {
-        const val ACTION_ALARM_TRIGGER = "com.metrolist.music.action.ALARM_TRIGGER"
-        const val EXTRA_ALARM_ID = "extra_alarm_id"
-        const val EXTRA_ALARM_PLAYLIST_ID = "extra_alarm_playlist_id"
-        const val EXTRA_ALARM_RANDOM_SONG = "extra_alarm_random_song"
-
         const val ROOT = "root"
         const val SONG = "song"
         const val ARTIST = "artist"

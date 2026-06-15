@@ -117,13 +117,7 @@ private fun Material3SettingsItemRow(
         } else if (item.icon != null) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(
-                            alpha = if (item.isHighlighted) 0.15f else 0.1f
-                        )
-                    ),
+                    .size(24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (item.showBadge) {

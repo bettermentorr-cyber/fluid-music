@@ -147,11 +147,13 @@ fun ShowMediaInfo(videoId: String) {
                     )
 
                     val iconsList = buildList {
-                        add(R.drawable.media3_icon_bookmark_filled)
+                        // Uncomment for debugging:
+                        // add(R.drawable.media3_icon_bookmark_filled)
                         if (currentFormat != null) {
-                            add(R.drawable.key)
-                            add(R.drawable.play)
-                            add(R.drawable.gradient)
+                            // Uncomment for debugging:
+                            // add(R.drawable.key)
+                            // add(R.drawable.play)
+                            // add(R.drawable.gradient)
                             add(R.drawable.contrast)
                             add(R.drawable.volume_up)
                             add(R.drawable.volume_up)
@@ -163,11 +165,13 @@ fun ShowMediaInfo(videoId: String) {
                     val measuredLufs: Double? = currentFormat?.perceptualLoudnessDb ?: currentFormat?.loudnessDb?.let { it + LoudnessLevel.AGGRESSIVE.targetLufs }
 
                     val extendedList = buildList {
-                        add(stringResource(R.string.media_id) to song?.id)
+                        // Uncomment for debugging:
+                        // add(stringResource(R.string.media_id) to song?.id)
                         if (currentFormat != null) {
-                            add("Itag" to currentFormat?.itag?.toString())
-                            add(stringResource(R.string.stream_client) to currentStreamClient)
-                            add(stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" })
+                            // Uncomment for debugging:
+                            // add("Itag" to currentFormat?.itag?.toString())
+                            // add(stringResource(R.string.stream_client) to currentStreamClient)
+                            // add(stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" })
                             add(stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" })
                             add(stringResource(R.string.loudness) to measuredLufs?.let {
                                 String.format(LocalLocale.current.platformLocale, "%.2f dB", it - targetLufs)

@@ -517,14 +517,17 @@ fun SongMenu(
                         NewAction(
                             icon = {
                                 Icon(
-                                    painter = painterResource(R.drawable.edit),
+                                    painter = painterResource(R.drawable.radio),
                                     contentDescription = null,
                                     modifier = Modifier.size(28.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             },
-                            text = stringResource(R.string.edit),
-                            onClick = { showEditDialog = true },
+                            text = stringResource(R.string.start_radio),
+                            onClick = {
+                                onDismiss()
+                                playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
+                            },
                         ),
                         NewAction(
                             icon = {
@@ -584,24 +587,7 @@ fun SongMenu(
                         } else {
                             null
                         },
-                        if (!isGuest) {
-                            Material3MenuItemData(
-                                title = { Text(text = stringResource(R.string.start_radio)) },
-                                description = { Text(text = stringResource(R.string.start_radio_desc)) },
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.radio),
-                                        contentDescription = null,
-                                    )
-                                },
-                                onClick = {
-                                    onDismiss()
-                                    playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
-                                },
-                            )
-                        } else {
-                            null
-                        },
+
                         if (!isGuest) {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.play_next)) },

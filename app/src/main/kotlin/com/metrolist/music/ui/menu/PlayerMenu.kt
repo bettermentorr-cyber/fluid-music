@@ -228,6 +228,7 @@ fun PlayerMenu(
         }
     }
 
+/*
     if (isQueueTrigger != true) {
         Column(
             modifier =
@@ -282,6 +283,7 @@ fun PlayerMenu(
             }
         }
     }
+    */
 
     Spacer(modifier = Modifier.height(20.dp))
 

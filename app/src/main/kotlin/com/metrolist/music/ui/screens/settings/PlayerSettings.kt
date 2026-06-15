@@ -472,6 +472,7 @@ fun PlayerSettings(
                     onClick = { if (skipSilence) onSkipSilenceInstantChange(!skipSilenceInstant) }
                 ))
                 */
+                /*
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.volume_up),
                     title = { Text(stringResource(R.string.audio_normalization)) },
@@ -502,6 +503,7 @@ fun PlayerSettings(
                         onClick = { showLoudnessLevelDialog = true }
                     ))
                 }
+                */
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.graphic_eq),
                     title = { Text(stringResource(R.string.audio_offload)) },
@@ -779,9 +781,7 @@ fun PlayerSettings(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AlarmSettingsSection()
 
-        Spacer(modifier = Modifier.height(27.dp))
 
         Material3SettingsGroup(
             title = stringResource(R.string.queue),
