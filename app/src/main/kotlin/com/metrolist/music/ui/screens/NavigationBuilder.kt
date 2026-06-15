@@ -58,6 +58,7 @@ import com.metrolist.music.ui.screens.settings.PrivacySettings
 import com.metrolist.music.ui.screens.settings.RomanizationSettings
 import com.metrolist.music.ui.screens.settings.SettingsScreen
 import com.metrolist.music.ui.screens.settings.StorageSettings
+import com.metrolist.music.ui.screens.settings.StreamSourcesSettings
 import com.metrolist.music.ui.screens.settings.ThemeScreen
 import com.metrolist.music.ui.screens.settings.UpdaterScreen
 
@@ -369,6 +370,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("settings/player") {
         PlayerSettings(navController)
+    }
+
+    composable("settings/stream_sources") {
+        StreamSourcesSettings(navController)
     }
 
     composable("settings/storage") {

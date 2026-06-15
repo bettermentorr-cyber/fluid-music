@@ -53,6 +53,8 @@ import com.metrolist.music.constants.LoudnessLevelKey
 import com.metrolist.music.db.entities.FormatEntity
 import com.metrolist.music.db.entities.Song
 import com.metrolist.music.ui.component.Material3SettingsGroup
+import com.metrolist.music.utils.cipher.CipherDeobfuscator
+import com.metrolist.music.utils.cipher.PlayerDatesStore
 import com.metrolist.music.ui.component.Material3SettingsItem
 import com.metrolist.music.ui.component.shimmer.ShimmerHost
 import com.metrolist.music.ui.component.shimmer.TextPlaceholder
@@ -146,14 +148,18 @@ fun ShowMediaInfo(videoId: String) {
                         R.drawable.radio
                     )
 
+                    val notApplicable = stringResource(R.string.not_applicable)
+                    val isWebStream = currentStreamClient in setOf("WEB_REMIX", "WEB_CREATOR", "TVHTML5", "WEB")
+                    val playerHash = if (isWebStream) CipherDeobfuscator.lastUsedPlayerHash else null
+
                     val iconsList = buildList {
-                        // Uncomment for debugging:
-                        // add(R.drawable.media3_icon_bookmark_filled)
                         if (currentFormat != null) {
                             // Uncomment for debugging:
                             // add(R.drawable.key)
                             // add(R.drawable.play)
-                            // add(R.drawable.gradient)
+                            // add(R.drawable.contrast)
+                            add(R.drawable.lock)
+                            add(R.drawable.key_vertical)
                             add(R.drawable.contrast)
                             add(R.drawable.volume_up)
                             add(R.drawable.volume_up)
@@ -165,13 +171,13 @@ fun ShowMediaInfo(videoId: String) {
                     val measuredLufs: Double? = currentFormat?.perceptualLoudnessDb ?: currentFormat?.loudnessDb?.let { it + LoudnessLevel.AGGRESSIVE.targetLufs }
 
                     val extendedList = buildList {
-                        // Uncomment for debugging:
-                        // add(stringResource(R.string.media_id) to song?.id)
                         if (currentFormat != null) {
                             // Uncomment for debugging:
                             // add("Itag" to currentFormat?.itag?.toString())
                             // add(stringResource(R.string.stream_client) to currentStreamClient)
                             // add(stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" })
+                            add(stringResource(R.string.format_player_hash) to (if (isWebStream) playerHash else notApplicable))
+                            add(stringResource(R.string.format_cipher_support_added) to (if (isWebStream) PlayerDatesStore.get(playerHash) else notApplicable))
                             add(stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" })
                             add(stringResource(R.string.loudness) to measuredLufs?.let {
                                 String.format(LocalLocale.current.platformLocale, "%.2f dB", it - targetLufs)
