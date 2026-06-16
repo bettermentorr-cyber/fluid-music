@@ -300,7 +300,7 @@ fun AccountSettings(
         Material3SettingsGroup(
             items = listOf(
                 Material3SettingsItem(
-                    title = { Text(stringResource(R.string.stats)) },
+                    title = { Text(stringResource(R.string.your_listening_stats)) },
                     icon = painterResource(R.drawable.stats),
                     onClick = {
                         onClose()

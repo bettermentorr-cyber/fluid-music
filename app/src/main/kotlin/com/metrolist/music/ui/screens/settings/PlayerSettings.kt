@@ -61,7 +61,6 @@ import com.metrolist.music.constants.PersistentQueueKey
 import com.metrolist.music.constants.PersistentShuffleAcrossQueuesKey
 import com.metrolist.music.constants.PreventDuplicateTracksInQueueKey
 import com.metrolist.music.constants.RememberShuffleAndRepeatKey
-import com.metrolist.music.constants.ResumeOnBluetoothConnectKey
 import com.metrolist.music.constants.SeekExtraSeconds
 import com.metrolist.music.constants.ShufflePlaylistFirstKey
 import com.metrolist.music.constants.SimilarContent
@@ -163,15 +162,15 @@ fun PlayerSettings(
         defaultValue = false
     )
 
-    val (autoLoadMore, onAutoLoadMoreChange) = rememberPreference(
+    val (_, onAutoLoadMoreChange) = rememberPreference(
         AutoLoadMoreKey,
         defaultValue = true
     )
-    val (autoRadioQueue, onAutoRadioQueueChange) = rememberPreference(
+    val (_, onAutoRadioQueueChange) = rememberPreference(
         AutoRadioQueueKey,
         defaultValue = true
     )
-    val (disableLoadMoreWhenRepeatAll, onDisableLoadMoreWhenRepeatAllChange) = rememberPreference(
+    val (_, onDisableLoadMoreWhenRepeatAllChange) = rememberPreference(
         DisableLoadMoreWhenRepeatAllKey,
         defaultValue = false
     )
@@ -187,7 +186,7 @@ fun PlayerSettings(
         AutoSkipNextOnErrorKey,
         defaultValue = false
     )
-    val (autoplay, onAutoplayChange) = rememberPreference(
+    val (_, onAutoplayChange) = rememberPreference(
         AutoplayKey,
         defaultValue = true
     )
@@ -213,10 +212,6 @@ fun PlayerSettings(
     )
     val (pauseOnMute, onPauseOnMuteChange) = rememberPreference(
         PauseOnMute,
-        defaultValue = false
-    )
-    val (resumeOnBluetoothConnect, onResumeOnBluetoothConnectChange) = rememberPreference(
-        ResumeOnBluetoothConnectKey,
         defaultValue = false
     )
     val (keepScreenOn, onKeepScreenOnChange) = rememberPreference(
@@ -832,69 +827,6 @@ fun PlayerSettings(
                         )
                     },
                     onClick = { onPersistentQueueChange(!persistentQueue) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.playlist_add),
-                    title = { Text(stringResource(R.string.auto_load_more)) },
-                    description = { Text(stringResource(R.string.auto_load_more_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = autoLoadMore,
-                            onCheckedChange = onAutoLoadMoreChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (autoLoadMore) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onAutoLoadMoreChange(!autoLoadMore) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.radio),
-                    title = { Text(stringResource(R.string.auto_radio_queue)) },
-                    description = { Text(stringResource(R.string.auto_radio_queue_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = autoRadioQueue,
-                            onCheckedChange = onAutoRadioQueueChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (autoRadioQueue) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onAutoRadioQueueChange(!autoRadioQueue) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.skip_next),
-                    title = { Text(stringResource(R.string.autoplay)) },
-                    description = { Text(stringResource(R.string.autoplay_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = autoplay,
-                            onCheckedChange = onAutoplayChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (autoplay) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onAutoplayChange(!autoplay) }
                 )
             ) + listOf(
                 Material3SettingsItem(
@@ -910,27 +842,6 @@ fun PlayerSettings(
                     onClick = { isAdvancedExpanded = !isAdvancedExpanded }
                 )
             ) + if (isAdvancedExpanded) listOf(
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.repeat),
-                    title = { Text(stringResource(R.string.disable_load_more_when_repeat_all)) },
-                    description = { Text(stringResource(R.string.disable_load_more_when_repeat_all_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = disableLoadMoreWhenRepeatAll,
-                            onCheckedChange = onDisableLoadMoreWhenRepeatAllChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (disableLoadMoreWhenRepeatAll) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onDisableLoadMoreWhenRepeatAllChange(!disableLoadMoreWhenRepeatAll) }
-                ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.download),
                     title = { Text(stringResource(R.string.auto_download_on_like)) },
@@ -1125,26 +1036,6 @@ fun PlayerSettings(
                         )
                     },
                     onClick = { onPauseOnMuteChange(!pauseOnMute) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.bluetooth),
-                    title = { Text(stringResource(R.string.resume_on_bluetooth_connect)) },
-                    trailingContent = {
-                        Switch(
-                            checked = resumeOnBluetoothConnect,
-                            onCheckedChange = onResumeOnBluetoothConnectChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (resumeOnBluetoothConnect) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onResumeOnBluetoothConnectChange(!resumeOnBluetoothConnect) }
                 ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.screenshot),
