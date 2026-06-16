@@ -1030,7 +1030,7 @@ fun BottomSheetPlayer(
                     ) { title ->
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -1061,6 +1061,8 @@ fun BottomSheetPlayer(
                                     ),
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,

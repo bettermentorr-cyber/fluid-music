@@ -24,6 +24,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -360,8 +361,8 @@ fun Thumbnail(
                             AnimatedContent(
                                 targetState = currentMediaItem,
                                 transitionSpec = {
-                                    (fadeIn(animationSpec = tween(350)) + scaleIn(initialScale = 0.94f, animationSpec = tween(350)))
-                                        .togetherWith(fadeOut(animationSpec = tween(200)))
+                                     (fadeIn(animationSpec = tween(500, easing = EaseOutCubic)) + scaleIn(initialScale = 0.96f, animationSpec = tween(500, easing = EaseOutCubic)))
+                                         .togetherWith(fadeOut(animationSpec = tween(300, easing = EaseOutCubic)))
                                 },
                                 label = "PosterTransition"
                             ) { targetMediaItem ->
